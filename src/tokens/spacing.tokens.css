@@ -1,0 +1,328 @@
+/* ============================================================
+   Spacing Tokens — Figma 추출본
+   출처: Figma file 7DxkWa12fiJWOrvPIDWUcp
+         node 27671:860 (SpacingGuide) / 27671:1222 (spacing-scale)
+   추출: 2026-08-24
+
+   ⚠ 출처 구분 — SpacingGuide 프레임에는 Figma Variable 바인딩이 0개다.
+   아래 값은 가이드의 "Spacing Scale" 표에 적힌 값을 그대로 읽은 것이며,
+   Figma 변수 시스템에서 온 것이 아니다. (get_variable_defs → {} )
+   변수로 등록되면 /sync-tokens 로 다시 맞춘다.
+
+   네이밍: Figma 가이드의 숫자를 그대로 유지한다 (scale-4 → --spacing-4).
+   ⚠ Tailwind 기본 스케일과 의미가 다르다. p-4 는 여기서 16px 이 아니라 4px 다.
+   ============================================================ */
+
+@theme {
+  /* Tailwind 기본 동적 spacing 을 끈다.
+     끄지 않으면 p-7 · p-13 처럼 스케일에 없는 값이 조용히 통과한다. */
+  --spacing-*: initial;
+
+  /* --- spacing scale (Figma 가이드 표 13단 + 0) ---------------
+     값(px) · 용도는 docs/design-tokens.md 참조 */
+  --spacing-0: 0;
+  --spacing-4: 0.25rem;    /* 4px  — 미세 간격 · 텍스트 인라인 아이콘 */
+  --spacing-6: 0.375rem;   /* 6px  — 컴포넌트 내부 미세 패딩 */
+  --spacing-8: 0.5rem;     /* 8px  — CTA 상단 여백 · 버튼 간격 */
+  --spacing-12: 0.75rem;   /* 12px — 라벨 ↔ 입력 필드 · 텍스트 세트 */
+  --spacing-14: 0.875rem;  /* 14px — 버튼 · 입력 필드 상하 패딩 */
+  --spacing-16: 1rem;      /* 16px — 아이콘 ↔ 텍스트 간격 */
+  --spacing-20: 1.25rem;   /* 20px — 페이지 좌우 마진 · CTA 하단 */
+  --spacing-24: 1.5rem;    /* 24px — 주요 리스트 항목 상하 패딩 */
+  --spacing-32: 2rem;      /* 32px — 탭 하위 콘텐츠 시작 여백 */
+  --spacing-40: 2.5rem;    /* 40px — 콘텐츠 시작 여백 · 필드 간 간격 */
+  --spacing-64: 4rem;      /* 64px — 타이틀 ↔ 입력 영역 간격 */
+  --spacing-80: 5rem;      /* 80px — 가이드 preview 에만 있음, 용도 표 없음 */
+  --spacing-100: 6.25rem;  /* 100px — 가이드 preview 에만 있음, 용도 표 없음 */
+
+  /* --- 모바일 프레임 폭 (w-mobile-frame-width) --------------------
+     이 디자인 시스템이 고정하는 화면 폭이다. 컴포넌트 하나의 실측값이 아니라
+     모든 화면이 그 안에 그려지는 프레임의 폭이라, 위 간격 스케일 바로 뒤 ·
+     컴포넌트별 실측 하위 축(아래 control 높이 · button-height · OS 바 블록)
+     보다 앞에 둔다.
+
+     ⚠ Figma 변수 아님, 가이드 표에도 없음. 출처는 Figma 레이어 실측값이다
+     (파일 7DxkWa12fiJWOrvPIDWUcp, 섹션 27719:2395 "OSBarNavigation").
+       · get_metadata(27719:2395) — 섹션 안 심볼 6개가 전부 width = 402
+         BottomNav 27719:2194 · 2196 · 2198 = 402 × 34
+         TopNav    27719:2205 · 2224 · 2243 = 402 × 62
+       · get_variable_defs(27719:2205) = {icon/primary, border/strong,
+         spacing/20, spacing/8, bg/secondary}
+       · get_variable_defs(27719:2194) = {radius/full, icon/primary, bg/secondary}
+       ⇒ 402 에 대응하는 변수 바인딩이 두 트리 어디에도 없다. (2026-08-24 재확인)
+
+     위 spacing scale 13단에 끼워 넣지 않는 이유는 --spacing-button-height ·
+     --spacing-hairline 과 같다: 그 13단은 Figma 가이드 표를 그대로 옮긴 것이고
+     402 는 그 표에 없다. 끼워 넣으면 "가이드 표 그대로" 라는 전제가 깨지고,
+     간격이 아닌 값에 p-* · gap-* 유틸리티가 딸려 나온다.
+
+     아래 OS 바 실측 블록에 넣지 않는 이유: 그 블록은 자기 값들을 "OS 바 두
+     컴포넌트 밖에서는 쓰지 않는다" 고 선언한다. 402 는 반대 성격이다 — OS 바
+     두 컴포넌트뿐 아니라 그 프레임 안에 놓이는 모든 화면이 공유하는 폭이다.
+     (같은 402 가 Header 27657:3123 의 폭이기도 하다.)
+     그 블록에 넣으면 그 선언과 어긋난다.
+
+     이름에 기기 모델명을 넣지 않는 이유: 같은 402pt 를 문서마다 다르게 부른다
+     (기존 .design.md 는 "iPhone 16 Pro", 요청자는 "아이폰 17"). 모델명을 박으면
+     값이 같은데 이름만 다른 토큰이 생긴다. 이 시스템이 고정하는 것은 특정
+     기기가 아니라 자신의 모바일 프레임 폭이다.
+
+     이름에 -width 를 남기는 이유는 --spacing-home-indicator-width 와 같다:
+     --spacing-* 는 w-* 뿐 아니라 h-* · p-* · gap-* 도 읽는다. -width 가 붙어
+     있으면 h-mobile-frame-width · p-mobile-frame-width 가 읽는 순간 오용임이
+     드러난다. */
+  --spacing-mobile-frame-width: 25.125rem;  /* 402px — 모바일 프레임 폭. 27719:2205 · 27719:2194 width. 디렉터리 전체가 rem 이라 rem 으로 맞춘다 */
+
+  /* --- 컨트롤 높이 (h-control-md 등) --------------------------
+     ⚠ Figma 출처 없음. Spacing 가이드는 간격만 다루고 컨트롤 높이를
+     정의하지 않는다. 기존 저장소 값을 그대로 유지한다.
+     48px 는 Figma 스케일에 없는 값이다. */
+  --spacing-control-sm: 2rem;    /* 32px */
+  --spacing-control-md: 2.5rem;  /* 40px */
+  --spacing-control-lg: 3rem;    /* 48px — Figma 스케일 밖 */
+
+  /* --- 버튼 높이 (min-h-button-height) --------------------------
+     ⚠ Figma 변수 아님, 가이드 표에도 없음. 출처는 Figma 레이어 실측 제약이다
+     (파일 7DxkWa12fiJWOrvPIDWUcp):
+       · 컴포넌트 세트 `Button` 1:4004 의 variant 12개가 **전부** height = 55
+       · 대표 노드 1:4061 (filled/primary, default, state layer 없음) 은 82 × 55
+
+     auto-layout hug 결과가 아니라 설정된 제약이라는 근거:
+       · 폭은 hug 로 설명된다 — 라벨 42 + spacing/20 × 2 = 82 (실제 82)
+       · 높이는 설명되지 않는다 — 라벨 19 + spacing/14 × 2 = 47 ≠ 55 (8px 초과)
+       · content 프레임 1:4062 가 y=18 에 있다. (55 − 19) / 2 = 18 —
+         선언된 padding 14 가 아니라 강제된 높이 안에서 가운데 정렬된 결과다.
+         hug 였다면 y=14 여야 한다.
+       · `get_design_context`(1:4004) 가 12개 variant 루트 전부에 min-h-[55px] 를
+         방출한다. hug 면 높이 클래스가 나오지 않는다.
+       · `get_variable_defs`(1:4061) 에 높이 변수가 없다 — spacing/4 · spacing/20 ·
+         spacing/14 · radius/4 와 색 · 폰트뿐이다. 이 파일의 number 변수 전체를
+         확인해도 spacing/* · radius/* · font-size/* 뿐이고 높이 변수는 없다.
+       ⇒ 55 는 Figma 변수가 아니라 raw 레이어 제약이다. --spacing-hairline 과
+         같은 성격(실측값)이라 같은 방식으로 별도 하위 축에 둔다.
+
+     위 control 높이 축(32/40/48)에 끼워 넣지 않는 이유:
+       · 그 축은 주석대로 "Figma 출처 없음" 인 기존 저장소 값이다. Figma 실측값을
+         같은 축에 섞으면 그 출처 표기가 토큰마다 달라져 축 단위로 읽을 수 없게 된다.
+       · sm/md/lg 는 t-shirt 크기 축인데 Figma Button 에는 size variant 가 아예 없다.
+         55 를 lg(48) 위에 xl 로 얹으면 존재하지 않는 크기 축을 암시하게 된다.
+
+     이름에 -height 를 남기는 이유: --spacing-* 는 h-* 뿐 아니라 w-* · inset-* 도
+     읽는다. `--spacing-button` 이면 w-button 이 "버튼 폭" 으로 그럴듯하게 읽히지만
+     버튼 폭은 hug(82) 라 틀린 값이 된다. `w-button-height` 는 읽는 순간 오용임이
+     드러난다. min-h-button-height 의 중복은 그 대가다. */
+  --spacing-button-height: 3.4375rem;  /* 55px — 버튼 높이 제약. 디렉터리 전체가 rem 이라 rem 으로 맞춘다 */
+
+  /* --- 헤더 행 높이 (h-header-row-height · min-h-header-row-height) ------
+     ⚠ Figma 변수 아님, 가이드 표에도 없음. 출처는 Figma 레이어 실측 제약 1건이다
+     (파일 7DxkWa12fiJWOrvPIDWUcp, Header 27657:3123):
+       · FRAME 27657:3127 `content` 의 height = 44
+
+     변수가 아니라는 근거 (2026-08-24 확인):
+       · get_variable_defs(27657:3123) = {icon/primary, text/primary, family-font,
+         font-size/title-small, font/title/small-strong, spacing/12, spacing/20,
+         spacing/6, bg/secondary}
+       · get_variable_defs(27657:3096) = {icon/primary, spacing/16, text/primary,
+         family-font, font-size/label-large, font/label/large, spacing/4, radius/0}
+       ⇒ 두 트리의 number 변수는 spacing/4 · 6 · 12 · 16 · 20 · radius/0 ·
+         font-size/* 뿐이고 44 에 대응하는 변수가 없다.
+
+     hug 결과가 아니라 설정된 제약이라는 근거 (--spacing-button-height 와 같은 시험):
+       · get_design_context(27657:3123) 가 27657:3127 에만 `h-[44px] min-h-[44px]` 를
+         방출한다. 같은 행의 형제 27657:3125 · 27657:3129 에는 높이 클래스가 없다 —
+         hug 면 높이 클래스가 나오지 않는다.
+       · 자식 title 27657:3128 은 height 23, y 오프셋 10.5 다. (44 − 23) / 2 = 10.5 —
+         선언된 padding 이 아니라 강제된 높이 안에서 가운데 정렬된 결과다.
+         상하 패딩 10 의 hug 였다면 프레임이 43, 오프셋이 10 이어야 한다.
+       · 루트 27657:3123 의 상하 패딩은 spacing/6 이다. 6 + 44 + 6 = 56 —
+         Header 전체 높이가 이 44 에서 나온다. 타이틀·슬롯이 모두 꺼져도 56 이 남는다.
+
+     ⚠ 적용 범위는 27657:3127 하나다. 같은 행의 27657:3125 `wrapper` 와 슬롯
+     27657:3129 · 27657:3097 · 27657:3101 에는 이 토큰을 쓰지 않는다. 그쪽은 hug 이고
+     선언된 값은 상하 패딩 10 이다. 근거는 같은 컴포넌트 세트의 두 variant 가 높이만
+     다르다는 것이다 — 27657:3097 iconGroup 은 자식 24 로 44 (24+10+10),
+     27657:3101 buttonGroup 은 자식 19 로 39 (19+10+10) 다. 높이가 강제된 값이라면
+     Button 1:4004 의 12 variant 가 전부 55 인 것처럼 두 variant 가 같아야 한다.
+     슬롯에 h-header-row-height 를 쓰면 buttonGroup 이 39 대신 44 로 렌더된다.
+     그 10 은 아래 --spacing-header-item-inset-y 다. 그 네 노드에는 높이 토큰이
+     아니라 py-header-item-inset-y 를 쓴다.
+
+     --spacing-statusbar-height (2.75rem = 44px) 와 합치지 않는 이유: 값은 정확히
+     같지만 축이 다르다. --spacing-hairline 이 두 실측값을 합칠 때 세운 기준이
+     "값이 같아서가 아니라 축이 같아서" 였고, clock-inset-y 와 indicators-height 를
+     13px 로 같아도 나눈 기준이 "한쪽이 Figma 에서 움직여도 다른 쪽은 따라가지
+     않는다" 였다. 여기서 statusbar-height 는 iOS 상태바 본체(27719:2208)의 재현이고
+     이쪽은 LG U+ Header 컴포넌트(27657:3127)의 제약이다. 기기가 바뀌어 상태바가
+     움직여도 Header 는 따라가지 않고, Header 가 48 로 바뀌어도 상태바는 따라가지
+     않는다. 더 결정적으로 위 OS 바 블록은 그 값들을 "OS 바 두 컴포넌트 밖에서는
+     쓰지 않는다" 고 이미 선언했다 — 합치면 그 선언과 어긋난다.
+
+     위 spacing scale 13단에 끼워 넣지 않는 이유는 --spacing-button-height ·
+     --spacing-hairline 과 같다: 그 13단은 Figma 가이드 표를 그대로 옮긴 것이고
+     44 는 그 표에 없다. 끼워 넣으면 간격이 아닌 값에 p-* · gap-* 이 딸려 나온다.
+
+     이름에 -height 를 남기는 이유도 --spacing-button-height 와 같다: --spacing-* 는
+     h-* 뿐 아니라 w-* · p-* 도 읽는다. Header 의 행 폭은 402 안의 fill(flex-1) 이라
+     고정값이 아니므로 w-header-row-height 는 읽는 순간 오용임이 드러난다. */
+  --spacing-header-row-height: 2.75rem;  /* 44px — Header content 행 높이 제약. 27657:3127 height. 디렉터리 전체가 rem 이라 rem 으로 맞춘다 */
+
+  /* --- 헤더 행 안 아이템 묶음의 상하 패딩 (py-header-item-inset-y) --------
+     ⚠ Figma 변수 아님, 가이드 표에도 없음. 출처는 Figma 실측값 1건이고
+     적용 노드는 4개다 (파일 7DxkWa12fiJWOrvPIDWUcp, Header 27657:3123):
+       · 27657:3125 `wrapper`            24 × 44, 자식 아이콘 24 @ y=10
+       · 27657:3129 Header Slot 인스턴스 104 × 44
+       · 27657:3097 contentType=iconGroup   104 × 44, 자식 아이콘 24 @ y=10
+       · 27657:3101 contentType=buttonGroup 100 × 39, 자식 라벨 19 @ y=10
+
+     변수가 아니라는 근거 (2026-08-24 확인):
+       · get_variable_defs(27671:1222) 는 이 파일의 spacing 컬렉션 전체를 내보낸다 —
+         spacing/4 · 6 · 8 · 12 · 14 · 16 · 20 · 24 · 32 · 40 · 64 · 80 · 100.
+         13단 전부이고 **10 은 없다** (8 과 12 사이가 비어 있다).
+       · get_variable_defs(27657:3097) = {icon/primary, spacing/16}
+       · get_variable_defs(27657:3101) = {text/primary, family-font,
+         font-size/label-large, font/label/large, spacing/4, radius/0, spacing/16}
+       ⇒ 두 variant 어디에도 10 에 대응하는 변수 바인딩이 없다.
+
+     높이가 아니라 상하 패딩이 선언값이라는 근거:
+       · get_design_context(27657:3096) 이 두 variant 루트에 그대로
+         `gap-[var(--spacing/16,16px)] py-[10px]` 를 방출한다. 높이 클래스는 없다.
+         gap 16 은 var() 로 나오고 10 은 raw 리터럴로 나온다 — 10 이 변수였다면
+         gap 처럼 var() 로 나왔을 것이다. --spacing-button-height 의 55 는 반대로
+         min-h-[55px] 가 방출됐다.
+       · 같은 컴포넌트 세트의 두 variant 높이가 다르다 (104×44 vs 100×39).
+         강제된 높이라면 Button 1:4004 의 12 variant 가 전부 55 인 것처럼 같아야
+         한다. 불변인 것은 높이가 아니라 패딩 10 이다 — 44 = 24+10+10,
+         39 = 19+10+10 으로 두 높이가 이 하나의 값에서 파생된다.
+
+     위 spacing scale 13단에 끼워 넣지 않는 이유는 --spacing-button-height ·
+     --spacing-hairline 과 같다: 그 13단은 Figma 가이드 표를 그대로 옮긴 것이고
+     바로 위 get_variable_defs(27671:1222) 결과가 그 표에 10 이 없음을 확인해 준다.
+     끼워 넣으면 "가이드 표 그대로" 라는 전제가 깨진다.
+
+     --spacing-statusbar-inset-top (0.625rem = 10px) 과 합치지 않는 이유: 값은 정확히
+     같지만 축이 다르다. --spacing-hairline 이 두 실측값을 합칠 때 세운 기준이 "값이
+     같아서가 아니라 축이 같아서" 였고, clock-inset-y 와 indicators-height 를 13px 로
+     같아도 나눈 기준이 "한쪽이 Figma 에서 움직여도 다른 쪽은 따라가지 않는다" 였다.
+     여기서 statusbar-inset-top 은 OSBarTopNavigation 루트(27719:2205)가 화면 최상단에
+     두는 여백이고, 이쪽은 LG U+ Header 행 안 아이템 묶음의 상하 패딩이다. 기기가
+     바뀌어 상태바 여백이 움직여도 Header 는 따라가지 않고, Header 패딩이 12 로
+     바뀌어도 상태바는 따라가지 않는다. 더 결정적으로 아래 OS 바 블록은 그 값들을
+     "OS 바 두 컴포넌트 밖에서는 쓰지 않는다" 고 이미 선언했다 — 합치면 그 선언과
+     어긋난다. --spacing-header-row-height 를 --spacing-statusbar-height 와 나눈 것과
+     같은 판단이다.
+
+     이름에 -inset-y 를 남기는 이유: --spacing-* 는 p-* 뿐 아니라 h-* · w-* · gap-* 도
+     읽는다. -inset-y 가 붙어 있으면 h-header-item-inset-y · px-header-item-inset-y ·
+     gap-header-item-inset-y 가 읽는 순간 오용임이 드러난다. 이 네 노드의 높이는
+     선언값이 아니라 파생값(44 · 39)이고 아이템 간 간격은 spacing/16 이다.
+     -row- 가 아니라 -item- 인 이유: 적용 대상은 행 자체가 아니라 행 안의 아이템
+     묶음이다. Header 루트 27657:3123 의 상하 패딩은 spacing/6 이고 wrapper
+     27657:3124 는 spacing/20(x) · spacing/6(y) 다 — row 라고 이름 붙이면 그쪽에
+     쓰이기 쉽다. Figma 슬롯 이름 `Header Slot/Left End/ Items` 의 Items 를 따른다. */
+  --spacing-header-item-inset-y: 0.625rem;  /* 10px — Header 행 안 아이템 묶음 상하 패딩. 27657:3125 · 3129 · 3097 · 3101 padding-y. 디렉터리 전체가 rem 이라 rem 으로 맞춘다 */
+
+  /* --- 선 두께 (h-hairline · border-hairline) -------------------
+     ⚠ Figma 변수 아님, 가이드 표에도 없음. 출처는 Figma 레이어 실측값 2건이다
+     (파일 7DxkWa12fiJWOrvPIDWUcp):
+       · RECTANGLE 20:5646 `divider` 의 height = 1
+       · FRAME 35:12810 `state area` (StateLayer/Focused) 의 border = 1px
+     두 노드 모두 두께에 변수 바인딩이 없다. 35:12810 에서 `get_design_context` 는
+     색과 반경만 var(--state/focused) · var(--radius/4) 로 내보내고 두께는 맨
+     `border` 로 내보낸다 — 변수였다면 두께도 var() 로 나왔을 것이다.
+     `get_variable_defs` 로 확인한 결과 이 파일의 number 변수는 spacing/* ·
+     radius/* · font-size/* 뿐이고 두께 변수는 존재하지 않는다. 두께를 정의한
+     가이드 프레임도 없다 (tokens 섹션의 가이드는 Color · Typography ·
+     Radius · Spacing 4개뿐).
+
+     위 spacing scale 에 끼워 넣지 않는 이유: 그 13단은 Figma 가이드 표를
+     그대로 옮긴 것이고, 1 은 그 표에 없다. 끼워 넣으면 "가이드 표 그대로"
+     라는 전제가 깨지고, 간격이 아닌 값에 p-1 · gap-1 유틸리티가 딸려 나온다.
+     그래서 control 높이와 같은 방식으로 별도 하위 축에 둔다.
+
+     구분선 두께와 포커스 링 두께를 한 토큰으로 두는 이유: 둘 다 "이 시스템에서
+     가장 얇은 선" 이라는 같은 축의 값이고, 두 Figma 실측값이 같은 1px 이며,
+     어느 쪽도 독립적으로 움직일 근거(변수 · 가이드 표)가 없다. 값이 같다는
+     이유만이 아니라 축이 같아서 합친다. Figma 에 두께 변수가 생겨 둘이 갈라지면
+     그때 나눈다 — "나중에 갈라질 것 같아서" 는 근거가 아니다 (원칙 2).
+
+     border-width 축을 @theme 에 따로 만들지 않은 이유는 그대로다: Tailwind v4 에
+     --border-width-* 테마 네임스페이스가 없다. border-2 류는 테마가 아니라 bare
+     number 라, 토큰을 정의해도 border 유틸리티가 생성되지 않는다.
+     --spacing-* 를 읽는 것은 h-* · w-* · inset-* 뿐이다.
+     그래서 border-width 로 내보내는 경로는 아래 @utility 로 열었다. */
+  --spacing-hairline: 0.0625rem;  /* 1px — 선 두께. 디렉터리 전체가 rem 이라 rem 으로 맞춘다 */
+
+  /* --- OS 바 실측 치수 (OSBarTopNavigation · OSBarBottomNavigation) ---
+     ⚠ Figma 변수 아님, 가이드 표에도 없음. 출처는 Figma 레이어 실측값 11건이다
+     (파일 7DxkWa12fiJWOrvPIDWUcp, 섹션 27719:2395 "OSBarNavigation").
+
+     변수가 아니라는 근거 (2026-08-24 재확인):
+       · get_variable_defs(27719:2205) = {icon/primary, border/strong,
+         spacing/20, spacing/8, bg/secondary}
+       · get_variable_defs(27719:2194) = {radius/full, icon/primary, bg/secondary}
+       ⇒ 이 두 심볼 트리 전체에서 number 변수는 spacing/20 · spacing/8 ·
+         radius/full 셋뿐이고, 아래 11개 값은 하나도 변수 바인딩이 없다.
+         get_metadata 가 읽은 좌표·크기가 유일한 출처다.
+
+     위 spacing scale 에 끼워 넣지 않는 이유는 --spacing-button-height ·
+     --spacing-hairline 과 같다: 그 13단은 Figma 가이드 표를 그대로 옮긴 것이고
+     10 · 44 · 27 · 13 · 3 · 84 · 21 · 134 · 5 는 그 표에 없다. 끼워 넣으면
+     "가이드 표 그대로" 라는 전제가 깨지고, 간격이 아닌 값에 gap-* · m-* 이
+     딸려 나온다.
+
+     이름에 -width / -height 를 남기는 이유도 --spacing-button-height 와 같다:
+     --spacing-* 는 h-* · w-* 뿐 아니라 p-* · gap-* 도 읽는다. 이름이 자리를
+     말하고 있어야 p-statusbar-clock-width 같은 오용이 읽는 순간 드러난다.
+
+     이 값들은 OS 목업의 재현이지 LG U+ 디자인 시스템의 스케일이 아니다.
+     OS 바 두 컴포넌트 밖에서는 쓰지 않는다. */
+
+  /* 상단 상태바 — 27719:2205 / 27719:2208 */
+  --spacing-statusbar-inset-top: 0.625rem;   /* 10px — 상태바 위 여백. 루트 27719:2205 padding-top (10 + 44 + spacing-8 = 62) */
+  --spacing-statusbar-height: 2.75rem;       /* 44px — iOS 상태바 본체 높이. 27719:2208 Content height */
+
+  /* 시계 영역 — 27719:2209 Start */
+  --spacing-statusbar-clock-inset-x: 1.6875rem;  /* 27px — 화면 좌측 끝 ↔ 시계. 27719:2209 padding-x */
+  --spacing-statusbar-clock-inset-y: 0.8125rem;  /* 13px — 27719:2209 padding-y */
+
+  /* 신호·와이파이·배터리 묶음 — 27719:2216 End>Content / 27719:2217 Levels */
+  --spacing-statusbar-indicators-inset-top: 0.1875rem; /* 3px  — 27719:2216 padding-top (아래쪽 1px 은 --spacing-hairline 재사용) */
+  --spacing-statusbar-indicators-width: 5.25rem;       /* 84px — 27719:2216 width. 27719:2217 의 선언 폭 99.67 은 내용 경계가 아니라 잔여값이므로 쓰지 않는다 */
+  --spacing-statusbar-indicators-height: 0.8125rem;    /* 13px — 27719:2217 Levels height */
+
+  /* ⚠ clock-inset-y 와 indicators-height 는 값이 같지만(13px) 합치지 않는다.
+     --spacing-hairline 이 두 실측값을 합칠 때 세운 기준이 "값이 같아서가 아니라
+     축이 같아서" 였다. 여기서 하나는 시계 영역의 상하 패딩이고 다른 하나는 글리프
+     묶음의 높이다 — 축이 다르고, 한쪽이 Figma 에서 움직여도 다른 쪽은 따라가지
+     않는다. 값이 같다는 이유만으로 합치면 다음 동기화에서 잘못 갈라진다. */
+
+  /* 시계 글리프(`9:41`) 박스 — 27719:2210.
+     소수점 두 값은 OS 상태바 목업의 벡터 바운딩 박스에서 그대로 온 것이라 간격
+     스케일과 성격이 다르다. 그래서 위 13단에도, 바로 위 정수 실측값에도 섞지 않고
+     이 두 줄만 따로 둔다 — 스케일로 읽힐 여지를 없애는 것이 목적이다.
+     반올림하지 않는 이유: 인라인 SVG 의 viewBox 와 1:1 로 맞물리는 값이고,
+     반올림하면 글리프가 미세하게 늘어난다. 실측값임을 소수점이 그대로 드러내는
+     편이 낫다 (원칙 1 — 추정한 값을 넣지 않는다). */
+  --spacing-statusbar-clock-width: 2.082977294921875rem;   /* 33.32763671875px */
+  --spacing-statusbar-clock-height: 0.785980224609375rem;  /* 12.57568359375px */
+
+  /* 하단 홈 인디케이터 — 27719:2194 / 27719:2195 */
+  --spacing-home-indicator-inset-top: 1.3125rem; /* 21px  — 인디케이터 위 여백. 루트 27719:2194 padding-top (21 + 5 + spacing-8 = 34) */
+  --spacing-home-indicator-width: 8.375rem;      /* 134px — 27719:2195 width. Figma 의 좌우 패딩 134 는 별도 여백이 아니라 402 안에서 이 폭을 가운데 두기 위한 표현이다 */
+  --spacing-home-indicator-height: 0.3125rem;    /* 5px   — 27719:2195 height */
+}
+
+/* ============================================================
+   선 두께 유틸리티 — @theme 으로 표현되지 않는 축
+
+   Tailwind v4 에 --border-width-* 네임스페이스가 없어서 @theme 만으로는
+   border-width 유틸리티가 나오지 않는다. 위 --spacing-hairline 을 그대로 읽어
+   border-width 로 내보낸다. 새 값이 아니라 새 경로다 — 값은 위에서 한 번만
+   정의된다. typography.tokens.css 가 합성 타이포에 쓰는 것과 같은 방식이다.
+
+   색 · 스타일은 이 유틸리티에 넣지 않는다. 두께와 직교하게 유지해야
+   border-state-focused · border-solid 을 자유롭게 조합할 수 있다.
+   ============================================================ */
+@utility border-hairline {
+  border-width: var(--spacing-hairline);
+}

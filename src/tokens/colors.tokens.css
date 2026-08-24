@@ -1,0 +1,286 @@
+/* ============================================================
+   Color Tokens — Figma 추출본
+   출처: Figma file 7DxkWa12fiJWOrvPIDWUcp / node 27677-2907
+   추출: get_variable_defs (2026-08-24)
+
+   구조: Primitive(:root, 유틸리티 미생성) → Semantic(@theme, 유틸리티 생성)
+   컴포넌트는 Semantic 유틸리티만 쓴다. Primitive 직접 참조 금지.
+   raw 값 금지 규칙과 예외는 CLAUDE.md ## 토큰 규칙 참조.
+
+   주의: get_variable_defs 는 alias 체인이 아니라 해석된 값을 준다.
+   아래 Semantic → Primitive 참조는 값 일치로 역추적한 것이며
+   Figma 의 실제 alias 구조와 다를 수 있다. 매핑 근거는
+   docs/design-tokens.md 에 값과 함께 기록돼 있다.
+   ============================================================ */
+
+/* ============================================================
+   1. Primitive — Figma 원시 스케일. 유틸리티를 만들지 않는다.
+   ============================================================ */
+:root {
+  /* --- BW ---------------------------------------------------- */
+  --bw-white: #ffffff;
+  --bw-light-black: #1a1a1a;
+  --bw-dark-black: #050505;
+
+  /* --- neutralGray / light ----------------------------------- */
+  --neutral-gray-light-10: #fcfcfc;
+  --neutral-gray-light-50: #f2f2f2;
+  --neutral-gray-light-100: #ebebeb;
+  --neutral-gray-light-200: #e0e0e0;
+  --neutral-gray-light-300: #bdbdbd;
+  --neutral-gray-light-400: #a8a8a8;
+  --neutral-gray-light-500: #969696;
+  --neutral-gray-light-600: #747474;
+  --neutral-gray-light-700: #696969;
+  --neutral-gray-light-800: #474747;
+  --neutral-gray-light-900: #1a1a1a;
+
+  /* --- magenta / light --------------------------------------- */
+  --magenta-light-10: #fef1f7;
+  --magenta-light-50: #fbc1de;
+  --magenta-light-100: #f891c4;
+  --magenta-light-200: #f066ab;
+  --magenta-light-300: #fa2993;
+  --magenta-light-400: #f11e87;
+  --magenta-light-500: #e4107a;
+  --magenta-light-600: #d5076e;
+  --magenta-light-700: #a30554;
+  --magenta-light-800: #72043b;
+  --magenta-light-900: #36021c;
+
+  /* --- magenta / dark ---------------------------------------- */
+  --magenta-dark-10: #100a0d;
+  --magenta-dark-50: #36212b;
+  --magenta-dark-100: #63314a;
+  --magenta-dark-200: #c10663;
+  --magenta-dark-300: #e50675;
+  --magenta-dark-400: #f4067d;
+  --magenta-dark-500: #f91589;
+  --magenta-dark-600: #ee53a1;
+  --magenta-dark-700: #f77eba;
+  --magenta-dark-800: #faaed4;
+  --magenta-dark-900: #fddded;
+
+  /* --- negative / light -------------------------------------- */
+  --negative-light-10: #fdf1f1;
+  --negative-light-50: #f9c8c8;
+  --negative-light-100: #f8aaaa;
+  --negative-light-200: #f47b7b;
+  --negative-light-300: #f04d4d;
+  --negative-light-400: #e51a1a;
+  --negative-light-500: #da0707;
+  --negative-light-600: #b20606;
+  --negative-light-700: #8b0404;
+  --negative-light-800: #770404;
+  --negative-light-900: #450202;
+
+  /* --- negative / dark --------------------------------------- */
+  --negative-dark-10: #231010;
+  --negative-dark-50: #381919;
+  --negative-dark-100: #462020;
+  --negative-dark-200: #901414;
+  --negative-dark-300: #b41818;
+  --negative-dark-400: #d71d1d;
+  --negative-dark-500: #e54343;
+  --negative-dark-600: #fd6868;
+  --negative-dark-700: #f29c9c;
+  --negative-dark-800: #f6c0c0;
+  --negative-dark-900: #fadbdb;
+
+  /* --- positive / light -------------------------------------- */
+  --positive-light-10: #eefbee;
+  --positive-light-50: #d5f6d5;
+  --positive-light-100: #a3eba4;
+  --positive-light-200: #79e27b;
+  --positive-light-300: #4fd851;
+  --positive-light-400: #2cc92e;
+  --positive-light-500: #24a326;
+  --positive-light-600: #018303;
+  --positive-light-700: #016f03;
+  --positive-light-800: #015102;
+  --positive-light-900: #013d01;
+
+  /* --- positive / dark --------------------------------------- */
+  --positive-dark-10: #0d1c0d;
+  --positive-dark-50: #132a13;
+  --positive-dark-100: #1c3f1d;
+  --positive-dark-200: #046c05;
+  --positive-dark-300: #1b881c;
+  --positive-dark-400: #31c433;
+  --positive-dark-500: #54d455;
+  --positive-dark-600: #7cde7e;
+  --positive-dark-700: #95e496;
+  --positive-dark-800: #beefbe;
+  --positive-dark-900: #dff6df;
+
+  /* --- informative / light ----------------------------------- */
+  --informative-light-10: #edf2fd;
+  --informative-light-50: #c7d8fa;
+  --informative-light-100: #a1bdf7;
+  --informative-light-200: #729df3;
+  --informative-light-300: #477eeb;
+  --informative-light-400: #1a5de5;
+  --informative-light-500: #064ad0;
+  --informative-light-600: #05389e;
+  --informative-light-700: #042e81;
+  --informative-light-800: #032363;
+  --informative-light-900: #021945;
+
+  /* --- informative / dark ------------------------------------ */
+  --informative-dark-10: #101623;
+  --informative-dark-50: #192438;
+  --informative-dark-100: #23314d;
+  --informative-dark-200: #0e3481;
+  --informative-dark-300: #144bb8;
+  --informative-dark-400: #185adc;
+  --informative-dark-500: #4379e5;
+  --informative-dark-600: #72a0fe;
+  --informative-dark-700: #8aacef;
+  --informative-dark-800: #aec5f4;
+  --informative-dark-900: #d2dff9;
+
+  /* --- warning / light --------------------------------------- */
+  --warning-light-10: #fefaec;
+  --warning-light-50: #fcf3cf;
+  --warning-light-100: #faeaa8;
+  --warning-light-200: #fbe27e;
+  --warning-light-300: #f9d74d;
+  --warning-light-400: #f8cc1b;
+  --warning-light-500: #e8ba02;
+  --warning-light-600: #b69202;
+  --warning-light-700: #8d6d01;
+  --warning-light-800: #655101;
+  --warning-light-900: #514101;
+
+  /* --- warning / dark ---------------------------------------- */
+  --warning-dark-10: #282415;
+  --warning-dark-50: #3c3515;
+  --warning-dark-100: #81660e;
+  --warning-dark-200: #937910;
+  --warning-dark-300: #e0b400;
+  --warning-dark-400: #f3c716;
+  --warning-dark-500: #f5d247;
+  --warning-dark-600: #f8de77;
+  --warning-dark-700: #f6e18d;
+  --warning-dark-800: #f9ebb3;
+  --warning-dark-900: #fbf3d0;
+
+  /* --- dimmed / black (light-black + alpha) ------------------ */
+  --dimmed-black-8: #1a1a1a14;
+  --dimmed-black-16: #1a1a1a29;
+  --dimmed-black-24: #1a1a1a3d;
+  --dimmed-black-32: #1a1a1a52;
+  --dimmed-black-40: #1a1a1a66;
+  --dimmed-black-48: #1a1a1a7a;
+  --dimmed-black-56: #1a1a1a8f;
+  --dimmed-black-64: #1a1a1aa3;
+  --dimmed-black-72: #1a1a1ab8;
+  --dimmed-black-80: #1a1a1acc;
+
+  /* --- dimmed / white (white + alpha) ------------------------ */
+  --dimmed-white-8: #ffffff14;
+  --dimmed-white-16: #ffffff29;
+  --dimmed-white-24: #ffffff3d;
+  --dimmed-white-32: #ffffff52;
+  --dimmed-white-40: #ffffff66;
+  --dimmed-white-48: #ffffff7a;
+  --dimmed-white-56: #ffffff8f;
+  --dimmed-white-64: #ffffffa3;
+  --dimmed-white-72: #ffffffb8;
+  --dimmed-white-80: #ffffffcc;
+}
+
+/* ============================================================
+   2. Semantic — Figma semantic 변수. 유틸리티가 생성된다.
+      Figma 이름을 그대로 보존한다: text/primary → --color-text-primary
+      (Tailwind v4 에서 --text-* 는 font-size 네임스페이스이므로
+       색은 반드시 --color-* 아래에 둔다.)
+   ============================================================ */
+@theme {
+  /* Tailwind 기본 팔레트(bg-red-500 등)를 끈다.
+     끄지 않으면 Figma 토큰 밖의 색이 조용히 통과한다. */
+  --color-*: initial;
+
+  /* --- text/* → text-text-*, bg-text-* ------------------------ */
+  --color-text-primary: var(--bw-light-black);
+  --color-text-secondary: var(--neutral-gray-light-600);
+  --color-text-tertiary: var(--neutral-gray-light-400);
+  --color-text-disabled: var(--neutral-gray-light-300);
+  --color-text-inverse: var(--bw-white);
+  --color-text-brand: var(--magenta-light-500);
+  --color-text-negative: var(--negative-light-500);
+  --color-text-positive: var(--positive-light-500);
+  --color-text-disabled-on-light: var(--dimmed-black-16);
+  --color-text-disabled-on-dark: var(--dimmed-white-40);
+
+  /* --- bg/* → bg-bg-* ----------------------------------------- */
+  --color-bg-primary: var(--bw-white);
+  --color-bg-secondary: var(--neutral-gray-light-10);
+  --color-bg-tertiary: var(--neutral-gray-light-50);
+  --color-bg-inverse: var(--bw-light-black);
+  --color-bg-brand: var(--magenta-light-500);
+  --color-bg-brand-subtle: var(--magenta-light-10);
+  --color-bg-negative-subtle: var(--negative-light-10);
+  --color-bg-positive-subtle: var(--positive-light-10);
+
+  /* --- border/* → border-border-* ----------------------------- */
+  --color-border-primary: var(--neutral-gray-light-100);
+  --color-border-secondary: var(--neutral-gray-light-200);
+  --color-border-strong: var(--bw-light-black);
+  --color-border-brand: var(--magenta-light-500);
+  --color-border-negative: var(--negative-light-500);
+  --color-border-disabled: var(--neutral-gray-light-100);
+  --color-border-disabled-on-light: var(--dimmed-black-16);
+
+  /* --- interactive/* ------------------------------------------
+     interactive/primary 은 Figma primitive 스케일 어디와도
+     일치하지 않는다 (magenta/light/500 은 #e4107a). Figma 확인 전까지
+     읽은 값을 그대로 둔다. 추측 매핑을 하지 않는다. (CLAUDE.md 원칙 1) */
+  --color-interactive-primary: #e10975;
+  --color-interactive-primary-hover: var(--magenta-light-600);
+  --color-interactive-primary-pressed: var(--magenta-light-700);
+  --color-interactive-secondary: var(--bw-white);
+  --color-interactive-secondary-hover: var(--neutral-gray-light-50);
+  --color-interactive-disabled: var(--neutral-gray-light-100);
+
+  /* --- button/* -----------------------------------------------
+     primary-fill / -focused / -pressed 는 Figma 에서 셋 다 #e10975 로
+     동일하다. 상태 구분이 아직 안 잡힌 것으로 보이며, 값을 임의로
+     분기시키지 않고 읽은 그대로 둔다. */
+  --color-button-primary-fill: #e10975;
+  --color-button-primary-text: var(--bw-white);
+  --color-button-primary-fill-focused: #e10975;
+  --color-button-primary-fill-pressed: #e10975;
+  --color-button-secondary-fill: var(--bw-light-black);
+  --color-button-secondary-text: var(--bw-white);
+  --color-button-secondary-fill-focused: var(--bw-light-black);
+  --color-button-secondary-fill-pressed: var(--bw-light-black);
+  --color-button-disabled-fill: var(--neutral-gray-light-100);
+  --color-button-disabled-text: var(--bw-light-black);
+  --color-button-ghost-text: var(--bw-light-black);
+
+  /* --- icon/* → text-icon-* (currentColor 용) ------------------ */
+  --color-icon-primary: var(--bw-light-black);
+  --color-icon-secondary: var(--neutral-gray-light-600);
+  --color-icon-tertiary: var(--neutral-gray-light-400);
+  --color-icon-inverse: var(--bw-white);
+  --color-icon-brand: var(--magenta-light-500);
+  --color-icon-negative: var(--negative-light-500);
+  --color-icon-disabled-on-light: var(--dimmed-black-16);
+  --color-icon-disabled-on-dark: var(--dimmed-white-64);
+
+  /* --- status/* ------------------------------------------------ */
+  --color-status-negative: var(--negative-light-500);
+  --color-status-positive: var(--positive-light-600);
+  --color-status-informative: var(--informative-light-500);
+  --color-status-warning: var(--warning-light-500);
+
+  /* --- stateLayer/* -------------------------------------------- */
+  --color-state-layer-pressed-black: var(--dimmed-black-16);
+  --color-state-layer-pressed-white: var(--dimmed-white-16);
+  --color-state-layer-hover-black: var(--dimmed-black-8);
+
+  /* --- overlay/*, state/* -------------------------------------- */
+  --color-overlay-dimmed: var(--dimmed-black-64);
+  --color-state-focused: var(--bw-light-black);
+}

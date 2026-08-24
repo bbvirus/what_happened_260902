@@ -1,0 +1,41 @@
+/* ============================================================
+   Design Tokens — 축별 분리 후 남은 것
+   Tailwind v4 CSS-first. 여기 정의된 토큰만 유틸리티로 생성된다.
+   raw 값 금지 규칙과 예외는 CLAUDE.md ## 토큰 규칙 참조.
+
+   축별 파일:
+     colors.tokens.css      색상    (Figma 추출)
+     spacing.tokens.css     간격    (Figma 가이드 표)
+     typography.tokens.css  타이포  (Figma 추출, @utility)
+     design-tokens.css      radius · shadow · breakpoint  ← 이 파일
+   ============================================================ */
+
+@theme {
+  /* --- radius ------------------------------------------------
+     출처: Figma node 27673:872 (RadiusGuide) / 27673:883 (radius-scale)
+     ⚠ RadiusGuide 프레임에도 Figma Variable 바인딩이 0개다.
+     가이드 preview 프레임 이름(radius-0 … radius-100)과 라벨에서 읽었다.
+     네이밍은 Figma 숫자를 그대로 유지한다. */
+  --radius-*: initial;
+
+  --radius-0: 0;            /* 직각 · Header, List, Divider, Tab, 페이지 프레임 (기본값) */
+  --radius-4: 0.25rem;      /* 4px  · Button, Text Field (주요 인터랙션 요소) */
+  --radius-8: 0.5rem;       /* 8px  · 가이드 preview 에만 있음, 용도 표 없음 */
+  --radius-12: 0.75rem;     /* 12px · 가이드 preview 에만 있음, 용도 표 없음 */
+  --radius-16: 1rem;        /* 16px · 가이드 preview 에만 있음, 용도 표 없음 */
+  --radius-100: 6.25rem;    /* 100px · Home Indicator (OS 전용). 가이드 라벨은 "Full" */
+
+  /* --- shadow ------------------------------------------------
+     ⚠ Figma 출처 없음. 이 파일에 shadow 변수도, shadow 가이드 프레임도
+     존재하지 않는다. 기존 저장소 값을 그대로 유지한다. */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 2px 8px -1px rgb(0 0 0 / 0.08);
+  --shadow-lg: 0 8px 24px -4px rgb(0 0 0 / 0.12);
+
+  /* --- breakpoint --------------------------------------------
+     ⚠ Figma 출처 없음. 기존 저장소 값을 그대로 유지한다. */
+  --breakpoint-sm: 40rem;
+  --breakpoint-md: 48rem;
+  --breakpoint-lg: 64rem;
+  --breakpoint-xl: 80rem;
+}
