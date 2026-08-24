@@ -10,10 +10,11 @@
 > 에 남겼다. 지운 것이 아니라 남긴 이유는, 같은 함정(파생값을 강제된 제약으로 오독하는 것)에
 > 다음 사람이 다시 빠지지 않게 하기 위함이다.
 >
-> ⚠ **미해결 불일치 1건이 남아 있다.** `contentType=buttonGroup` 의 렌더 높이가 Figma 실측
-> 39 가 아니라 **36** 이다 (3 작다). 원인은 이 컴포넌트가 아니라 `font-label-large` 의
-> line-height 이고, 그 파일은 편집 권한 밖이다.
-> [## 미해결 불일치 — buttonGroup 높이 3](#미해결-불일치--buttongroup-높이-3) 참조.
+> ✅ **한때 미해결이던 불일치 1건은 해소됐다.** `contentType=buttonGroup` 이 Figma 실측 39 와
+> 어긋나 36 으로 렌더되던 문제다. 원인은 이 컴포넌트가 아니라 `font-label-large` 의
+> line-height 오판정이었고, `token-guardian` 이 Figma 를 재확인해 **AUTO** 로 확정한 뒤
+> 사용자 결정으로 토큰이 고쳐졌다. **현재 실측 39 = Figma 실측 39.**
+> [## 해소된 불일치 — buttonGroup 높이 3](#해소된-불일치--buttongroup-높이-3) 참조.
 
 ## Figma 소스
 
@@ -84,7 +85,7 @@ Figma 인스턴스와 같은 상태다. 추측으로 한쪽을 고르지 않았�
 | 교차축 정렬 | 레이어 속성 | — (토큰 축이 아니다) | `items-start` / `items-center justify-end` |
 | 주축 정렬 (buttonGroup) | 레이어 속성 | — | `justify-end` |
 | 세로 여백 `10` | 레이어 실측값 (변수 바인딩 없음) | `--spacing-header-item-inset-y` = `0.625rem` = 10px | 재사용 → `py-header-item-inset-y` |
-| 높이 `44`(iconGroup) · `39`(buttonGroup) | 위 `10` 의 **파생값** | — (지정하지 않는다) | iconGroup 44 = 24+10+10 → **코드도 44** ✓ / buttonGroup 39 = 19+10+10 은 Figma 텍스트 메트릭 산술이고 **코드는 36** ✗ (아래 미해결 불일치) |
+| 높이 `44`(iconGroup) · `39`(buttonGroup) | 위 `10` 의 **파생값** | — (지정하지 않는다) | iconGroup 44 = 24+10+10 → **코드도 44** ✓ / buttonGroup 39 = 19+10+10 → **코드도 39** ✓ (한때 36 이었다 — 아래 해소된 불일치) |
 | 자식 크기 `24` | 실측 | `--spacing-24` | `Icon` 이 자체 `size-24` 로 이미 고정 → 이 컴포넌트가 다시 지정하지 않는다 |
 
 `불명` 0건. 막힌 것도 0건이다.
@@ -113,10 +114,11 @@ hug 면 높이 클래스가 나오지 않는다.
 12 variant 가 **전부** 55 였다는 것이다. 여기서 불변인 것은 높이가 아니라 패딩 10 이고,
 두 높이는 그 하나에서 파생된다 — 44 = 24+10+10 (자식 아이콘 24), 39 = 19+10+10 (자식 라벨 19).
 
-⚠ 이 산술의 `19` 는 **Figma 텍스트 메트릭 값**이고 브라우저 라인박스가 아니다. 브라우저는 같은
-라벨을 16 으로 만들기 때문에 **코드의 buttonGroup 높이는 39 가 아니라 36 이다.** 위 산술은
-"Figma 안에서 10 이 두 높이를 낳는다" 는 것을 보이는 데까지만 유효하다 — 코드 높이의 예측값이
-아니다. 아래 "## 미해결 불일치" 에 적었다.
+이 산술의 `19` 는 **Figma 텍스트 메트릭 값**이다. 한때 브라우저가 같은 라벨을 16 으로 만들어
+코드의 buttonGroup 높이가 36 이었고, 이 문서는 그 시점에 "위 산술은 코드 높이의 예측값이 아니다"
+라고 적었다. **그 어긋남은 해소됐다** — 원인이던 `font-label-large` 의 line-height 가 고쳐져
+브라우저 라인박스도 19 가 됐고, 이제 이 산술은 코드에도 그대로 성립한다.
+경위는 아래 "## 해소된 불일치" 에 있다.
 
 **근거 3 — 진짜 강제된 높이는 어떻게 보이는지.**
 Header 의 `content`(27657:3127)에는 `h-[44px]` **와** `min-h-[44px]` 가 함께 방출되고,
@@ -190,41 +192,58 @@ Figma 자신이 `slotEnd1..3` 를 instance-swap 슬롯으로 선언했으므로,
 ⇒ 이 컴포넌트의 `contentType=buttonGroup` 은 **`color="primary"` 를 넘긴다.** 라벨은
 `label` prop 이 아니라 `children` 으로 넘긴다. 사본을 만들지 않는다.
 
-## 미해결 불일치 — buttonGroup 높이 3
+## 해소된 불일치 — buttonGroup 높이 3
 
-**이 작업은 이 불일치를 해결하지 못했다.** "범위 밖" 이라고만 적어두면 다음 사람이 모르게 되므로
-여기 남긴다.
+**결론부터: 해소됐다. 현재 `contentType=buttonGroup` 의 실측 높이는 39 로 Figma 실측 39 와 같다.**
+아래는 무엇이 어긋났고 어떻게 풀렸는지의 기록이다. 지우지 않는 이유는, 원인이 이 컴포넌트가
+아니라 공유 타이포 토큰이었다는 것이 다음 사람에게 필요한 정보이기 때문이다.
 
-| | Figma | 실제 렌더 |
+### 어긋나 있던 상태 (정정 전)
+
+| | Figma | 당시 렌더 |
 |---|---|---|
 | 라벨 세로 크기 | **19** (Figma 텍스트 메트릭) | **16** (브라우저 라인박스) |
 | `contentType=buttonGroup` 높이 | **39** = 19 + 10 + 10 | **36** = 16 + 10 + 10 |
 | 차이 | | **3 작다** |
 
-**결정론적인 값이고 추정이 아니다.** shipped CSS 에서 확인했다 —
-`.font-label-large{font-family:var(--font-sans);font-size:1rem;font-weight:var(--font-weight-base);line-height:1}`.
-`line-height: 1` 이면 라인박스가 글자 크기와 같아지므로 16px 짜리 라벨의 세로 크기는 정확히 16 이다.
+당시 shipped CSS 는 이랬다 (**옛 값이다**):
+`.font-label-large{…font-size:1rem;font-weight:var(--font-weight-base);line-height:1}`.
+`line-height: 1` 이면 라인박스가 글자 크기와 같아지므로 16 크기 라벨의 세로 크기가 정확히 16 이었다.
 
-**iconGroup 은 이 문제가 없다.** 자식 `Icon` 은 텍스트가 아니라 고정 크기 24 라서
-10 + 24 + 10 = 44 로 Figma 실측과 일치한다 (리뷰어가 헤드리스 브라우저로 계측 확인).
-즉 어긋나는 것은 이 컨테이너가 아니라 **텍스트 자식이 들어오는 경우**다.
+**iconGroup 은 이 문제가 없었다.** 자식 `Icon` 은 텍스트가 아니라 고정 크기 24 라서
+10 + 24 + 10 = 44 로 줄곧 Figma 실측과 일치했다. 어긋나는 것은 이 컨테이너가 아니라
+**텍스트 자식이 들어오는 경우**였다 — 이 컨테이너가 정하는 값(상하 패딩 10 · gap 16 · 정렬)은
+처음부터 전부 Figma 와 일치했다.
 
-### 왜 이 작업에서 고치지 않았나
+### 어떻게 풀렸나 — `lineHeight: 100` 은 100% 가 아니라 AUTO 였다
 
-- 이 컨테이너가 정하는 값(상하 패딩 10 · gap 16 · 정렬)은 **전부 Figma 와 일치한다.**
-  차이는 전부 라벨 라인박스에서 나온다.
-- 원인 파일은 `typography.tokens.css` 의 `font-label-large` 이고, **이 작업 범위 밖이자
-  `figma-implementer` 의 편집 권한 밖**이다 (토큰은 `token-guardian` 담당).
-- 패딩을 키우거나 높이를 박아 36 을 39 로 맞추면 **원인이 숨는다.** 같은 타이포 토큰을 쓰는
-  다른 자리(`TextButton` 을 쓰는 모든 컴포넌트)는 그대로 어긋난 채 남는다.
+이 문서는 이전 판에서 *"AUTO(≈1.19)인지 100%인지 재확인해야 한다 … 확인하지 않았으므로
+단정하지 않는다"* 로 남겼다. **그 판단은 옳았고**, `token-guardian` 이 Figma 를 재확인해 답을 냈다.
 
-### 해결에 필요한 것 (`token-guardian` 의 일)
+**판정: AUTO.** 결정적 근거는 codegen 이 방출하는 값이다 —
+`get_design_context` 가 TextButton 의 label 텍스트 노드(`I27657:3102;13:1745`)에
+**`leading-[normal]`** 을 방출한다. 대조군인 title 노드(`27683:4403`)에는 `leading-[1.3]` 을
+방출하므로, codegen 이 아무 때나 `normal` 을 내는 것이 아니다.
+보강 근거 2건: 16 크기 label 텍스트 노드의 세로 크기가 19 다(100% 였다면 16). 그리고 직렬화
+계열이 어긋난다 — 130% 는 `1.2999…`, 150% 는 `1.5` 로 나오는데 label 만 정수 `100` 이다.
+(내가 시사 근거로 적었던 19 / 16 = **1.1875** 도 이 결론과 같은 방향이었다.)
 
-Figma 변수 `font/label/large` 의 lineHeight 가 **AUTO(≈1.19)인지 100%인지** 재확인해야 한다.
-`get_variable_defs`(27657:3096)가 내보낸 문자열은 `lineHeight: 100` 인데, 이 값이 "100%"(→ 1)를
-뜻하는지 Figma 의 AUTO 를 정규화한 표기인지가 갈림길이다. 19 / 16 = **1.1875** 로 Pretendard 의
-AUTO 행간에 가깝다는 점이 후자를 시사하지만, **확인하지 않았으므로 단정하지 않는다.**
-`font-label-large` 는 `TextButton` 을 비롯해 여러 컴포넌트가 공유하므로 여기서 임의로 바꾸지 않는다.
+**적용**: 사용자 결정으로 `typography.tokens.css` 의 label 계열 `@utility` **6종 전부**
+`line-height: 1` → **`line-height: normal`** 로 바뀌었다. 토큰 파일은 `token-guardian` 담당이고
+이 에이전트의 편집 권한 밖이므로, 내가 값을 조정해 덮지 않은 것이 결과적으로 옳았다 —
+패딩이나 높이로 36 을 39 로 맞췄다면 이 원인은 숨은 채 같은 토큰을 쓰는 다른 자리에
+그대로 남았을 것이다.
+
+**인과 실증**: 리뷰어가 `.font-label-large{line-height:1 !important}` 를 주입하면 buttonGroup 이
+39 → 36 으로 떨어지고, 제거하면 39 로 돌아오는 것을 확인했다.
+
+### 이 변경이 다른 컴포넌트에 미친 영향
+
+| 컴포넌트 | 결과 |
+|---|---|
+| `HeaderSlotLeftEndItems` buttonGroup | 36 → **39** (Figma 39 와 일치) |
+| `Button` | **55 불변** (4개 variant 전부). `min-h-button-height` 가 라인박스 증가를 흡수한다 — 토큰이 바뀌었는데 Button 이 그대로인 이유가 이것이다 |
+| `Header` | **402×56 불변.** 타이틀은 `font-title-small-strong`(line-height 1.3)을 쓰고 label 계열이 아니다 |
 
 ## 검증
 
@@ -235,7 +254,7 @@ AUTO 행간에 가깝다는 점이 후자를 시사하지만, **확인하지 않
 | 하드코딩 hook | `.tsx` 2개 모두 exit 0. Bash 로 파일을 썼기 때문에 `Write` 페이로드로 `check-hardcode.mjs` 에 직접 통과시켰다 (`.claude/settings.json` 의 matcher 는 `Edit|Write|MultiEdit` 뿐이라 Bash 쓰기에는 훅이 발동하지 않는다) |
 | 빌드 CSS 값 대조 | 번들(`dist/assets/*.css`)에서 확인: `.py-header-item-inset-y{padding-block:var(--spacing-header-item-inset-y)}` · `--spacing-header-item-inset-y:.625rem` (= 10px) · `.gap-16{gap:var(--spacing-16)}` · `.items-start{align-items:flex-start}` · `.justify-end{justify-content:flex-end}` |
 | 스크린샷 대조 (iconGroup) | `get_screenshot`(27657:3096) 은 점선 원 3개 + `레이블` 2개. 기하 계산이 Figma 실측과 일치한다 — 24+16+24+16+24 = **104** 폭, 10+24+10 = **44** 높이 (Figma 104×44) |
-| 스크린샷 대조 (buttonGroup) | 정렬 · 간격(gap 16) · 패딩(10)은 일치. **높이는 불일치** — Figma 39, 렌더 **36**. 이 컨테이너가 정하는 값(패딩 10)은 맞고 차이는 자식 라벨의 라인박스에서 나오지만, **미해결 상태로 남아 있다**. 아래 "## 미해결 불일치" 참조 |
+| 스크린샷 대조 (buttonGroup) | 정렬 · 간격(gap 16) · 패딩(10) · **높이 전부 일치**. 리뷰어가 헤드리스 Chrome 으로 계측: 높이 **39.00** = Figma 실측 39, 라벨 폭 42+16+42. 한때 36 이던 3 차이는 `font-label-large` 의 line-height 가 AUTO 로 고쳐지며 해소됐다 — 위 "## 해소된 불일치" 참조 |
 | 렌더 대조 | `react-dom/server` 로 실제 컴포넌트를 렌더해 방출 클래스를 확인했다: iconGroup `py-header-item-inset-y flex gap-16 items-start`, buttonGroup `py-header-item-inset-y flex gap-16 items-center justify-end`. buttonGroup 의 `TextButton` 라벨에 `text-text-primary` 가 실제로 붙는 것도 확인 |
 
 ⚠ 헤드리스 Chrome 스크린샷은 이 환경에서 응답하지 않아(두 번 타임아웃) 픽셀 대조는 하지 못했다.

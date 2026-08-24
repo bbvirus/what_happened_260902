@@ -152,6 +152,49 @@ Figma 의 실제 alias 와 다를 수 있다.
 | `icon/disabled-onLight` | `--color-icon-disabled-on-light` | `#1a1a1a29` | `--dimmed-black-16` |
 | `icon/disabled-onDark` | `--color-icon-disabled-on-dark` | `#ffffffa3` | `--dimmed-white-64` |
 
+#### icon/status-* → `text-icon-status-*` — Figma 변수 아님 (raw fill 역추적)
+
+위 8개와 달리 아래 3개는 **Figma Variable 이 아니다.** `TextFieldTextSet`(35:14458)
+상태 아이콘의 raw fill 오버라이드에서 역추적했다.
+
+| CSS 토큰 | 값 | 참조 primitive | 출처 (실측 노드) |
+|---|---|---|---|
+| `--color-icon-status-negative` | `#e51a1a` | `--negative-light-400` | `35:14600` `Icon/circle-fill` SVG fill |
+| `--color-icon-status-positive` | `#24a326` | `--positive-light-500` | `35:14564` `Icon/success-circle-fill` SVG fill |
+| `--color-icon-status-informative` | `#477eeb` | `--informative-light-300` | `35:14521` `info-circle-fill` SVG fill |
+
+**변수가 아니라는 근거** (2026-08-24): `get_variable_defs(35:14600)` = `{}` 이고,
+같은 variant 의 `get_variable_defs(35:14596)` 는 `{text/negative, family-font,
+font-size/body-small, font/body/small, spacing/4}` 만 준다. 텍스트 색은
+`var(--text/negative)` 로 나오는데 아이콘 색은 어떤 변수로도 나오지 않는다 —
+변수였다면 아이콘도 `var()` 로 나왔을 것이다. `--spacing-hairline` 이 두께에 쓴 것과 같은 판정 시험이다.
+
+**기존 semantic 으로 대체되지 않는 이유**: 세 값 모두 같은 variant 의 텍스트 색보다 한두 단 밝다.
+아이콘과 텍스트가 서로 다른 단을 쓰는 것이 세 status 에 일관되게 나타나므로 스타일 누락이 아니라 별도 축이다.
+
+| status | 아이콘 (신규) | 텍스트 (기존 변수) |
+|---|---|---|
+| error | `negative/light/400` `#e51a1a` | `text/negative` `#da0707` |
+| success | `positive/light/500` `#24a326` | `status/positive` `#018303` |
+| informative | `informative/light/300` `#477eeb` | `status/informative` `#064ad0` |
+
+⚠ `--color-icon-negative`(`#da0707`) 와 혼동하지 말 것. 그쪽은 Figma 변수 `icon/negative` 이고,
+이쪽은 상태 메시지 아이콘 전용의 더 밝은 값이다. 값이 다르므로 합칠 수 없다.
+
+⚠ `--color-text-positive` 는 값이 `#24a326` 로 `--color-icon-status-positive` 와 같지만 합치지 않는다.
+`--spacing-hairline` 이 세운 기준이 "값이 같아서가 아니라 축이 같아서" 였다. 하나는 본문 텍스트의
+positive 색이고 다른 하나는 상태 아이콘 색이다. 이 파일이 이미 `icon/*` 를 `text/*` 와 값이 같아도
+별도 축으로 두고 있는 것과 같다 (`icon-primary` ↔ `text-primary` 등 5쌍).
+
+`status/warning` 계열은 `TextFieldTextSet` 에 없으므로 추가하지 않았다.
+
+**같은 세트에서 기존 토큰으로 해결된 것** (새 토큰을 만들지 않았다):
+
+| variant | 아이콘 값 | 기존 토큰 |
+|---|---|---|
+| `status=default, isDisabled=false` | `#747474` | `--color-icon-secondary` |
+| `status=informative, isDisabled=true` | `#1a1a1a` | `--color-icon-primary` |
+
 ### status/*, stateLayer/*, overlay/*, state/*
 
 | Figma | CSS 토큰 | 값 | 참조 primitive |
@@ -401,6 +444,241 @@ border 유틸리티가 생성되지 않는다. `--spacing-*` 를 읽는 것은 `
 그래서 `typography.tokens.css` 가 합성 타이포에 쓰는 것과 같은 방식으로 `@utility` 를 썼다.
 값은 `--spacing-hairline` 한 곳에서만 정의되고, `@utility` 는 그것을 `border-width` 로 읽기만 한다.
 
+### TextFieldTextSet 아이콘 상단 인셋 — Figma 변수 아님 (레이어 실측값)
+
+| CSS 토큰 | 값 | 유틸리티 | 출처 (실측 노드) |
+|---|---|---|---|
+| `--spacing-textfield-textset-icon-inset-top` | 2px (`0.125rem`) | `pt-textfield-textset-icon-inset-top` | `35:14458` 6개 variant 의 `iconarea` y=2 / `pt-[2px]` |
+
+6개 variant 전부에서 동일하게 나타난다: `35:14664`(default) · `35:14671`(default·disabled) ·
+`35:14599`(error) · `35:14563`(success) · `35:14520`(informative) · `35:14527`(informative·disabled).
+
+**변수가 아니라는 근거** (2026-08-24): `get_variable_defs(35:14458)` 가 준 number 변수는
+`spacing/4` · `font-size/body-small` 뿐이고 `2` 는 없다. `get_design_context(35:14596)` 는 같은
+`wrapper` 안에서 gap 은 `gap-[var(--spacing/4,4px)]` 로 내보내는데 `iconarea` 의 상단 인셋은
+맨 `pt-[2px]` 로 내보낸다 — 변수였다면 이쪽도 `var()` 로 나왔을 것이다.
+
+**중앙 정렬의 부산물이 아니다**: 행 높이 21px(14px × 1.5) 안에 16px 아이콘이므로 중앙이면
+위아래 2.5px 이어야 하는데 실제는 위 2px · 아래 3px 이고, `get_design_context` 도 `items-center`
+가 아니라 `items-start pt-[2px]` 로 내보낸다. 의도된 상단 인셋이다.
+
+**13단 스케일에 넣지 않은 이유**는 `--spacing-hairline` · OS 바 실측값 · Tab 2px 과 같다.
+그 13단은 Figma 가이드 표를 그대로 옮긴 것이고 `2` 는 그 표에 없다.
+
+⚠ **Tab 2px 토큰 2개와 합치지 않는다.** 기준은 "값이 같아서가 아니라 축이 같아서" 다.
+Tab 쪽은 선택 표시선 두께와 상태 레이어 인셋이고 이쪽은 보조 텍스트 줄 안에서 아이콘을 첫 줄에
+맞추는 인셋이다 — 축이 셋 다 다르다. Tab 의 두 2px 을 서로 합치지 않은 것과 같은 판정이다.
+
+### TextFieldSlot/Bottom/Items 체크박스 행 상하 패딩 — Figma 변수 아님 (레이어 실측값)
+
+| CSS 토큰 | 값 | 유틸리티 | 출처 (실측 노드) |
+|---|---|---|---|
+| `--spacing-textfield-bottomitems-checkbox-inset-y` | 10px (`0.625rem`) | `py-textfield-bottomitems-checkbox-inset-y` | `13:2226` `[Checkbox]` 의 `py-[10px]` (variant `13:2225` `contentType=checkbox`, 61 × 40) |
+
+적용 노드는 1개다. `get_metadata(13:2225)` 상 이 variant 의 자식은 인스턴스 `13:2226` 하나뿐이다.
+
+**변수가 아니라는 근거** (2026-08-24): `get_variable_defs(13:2225)` 가 준 number 변수는
+`spacing/4` · `font-size/label-medium` 뿐이고 `10` 은 없다. `get_variable_defs(27671:1222)` 로
+spacing 컬렉션 전체(13단: 4 · 6 · 8 · 12 · 14 · 16 · 20 · 24 · 32 · 40 · 64 · 80 · 100)를 다시
+확인해도 `10` 이 없다 — 8 과 12 사이가 비어 있다. `get_design_context(13:2225)` 는 같은 노드
+`13:2226` 에서 gap 은 `gap-[var(--spacing/4,4px)]` 로 내보내는데 상하 패딩은 맨 `py-[10px]` 로
+내보낸다 — 변수였다면 이쪽도 `var()` 로 나왔을 것이다.
+
+**높이 40 을 고정하는 대안(`--spacing-control-md`)을 쓰지 않는 이유**: `get_design_context(13:2225)`
+가 `13:2226` 에 방출하는 것은 `py-[10px]` 뿐이고 **높이 클래스가 없다.** 높이가 강제된 제약이라면
+Button `1:4004` 의 `min-h-[55px]` · Header `27657:3127` 의 `h-[44px] min-h-[44px]` 처럼 나왔을
+것이다. 40 은 파생값이다 — 자식 중 가장 큰 체크박스 상자 20(`I13:2226;13:3940`, `size-[20px]`)에
+대해 20 + 10 + 10 = 40 으로 symbol 높이와 정확히 맞고, 라벨은 14px 이라 높이를 결정하지 않는다.
+게다가 `--spacing-control-md` 는 "Figma 출처 없음" 인 기존 저장소 값이라, Figma 실측 파생값을 그
+축으로 표현하면 출처 표기가 축 안에서 어긋난다. 선언된 값은 높이가 아니라 패딩 10 이다 —
+`--spacing-header-item-inset-y` 가 44 · 39 두 높이를 하나의 패딩에서 파생시킨 것과 같은 구조다.
+
+**13단 스케일에 넣지 않은 이유**는 `--spacing-hairline` · OS 바 실측값 · Tab 2px ·
+`textfield-textset-icon-inset-top` 과 같다. 그 13단은 Figma 가이드 표를 그대로 옮긴 것이고
+위 `get_variable_defs(27671:1222)` 결과가 그 표에 `10` 이 없음을 확인해 준다.
+
+⚠ **값이 같은 기존 토큰 2개와 합치지 않는다.** `--spacing-header-item-inset-y` ·
+`--spacing-statusbar-inset-top` 도 `0.625rem` 이지만, 기준은 "값이 같아서가 아니라 축이 같아서" 다.
+header 쪽은 Header 행 안 아이템 묶음의 패딩, statusbar 쪽은 OSBarTopNavigation 이 화면 최상단에
+두는 여백, 이쪽은 TextField 아래 슬롯 체크박스 행의 패딩이다 — 축이 셋 다 다르고 하나가 Figma 에서
+움직여도 나머지는 따라가지 않는다. 더구나 두 블록은 각각 "Header 전용" · "OS 바 두 컴포넌트
+밖에서는 쓰지 않는다" 고 이미 선언했다 — 끌어다 쓰면 그 선언과 어긋난다.
+`clock-inset-y` 와 `indicators-height`(둘 다 13px) 를 합치지 않은 것과 같은 판정이다.
+
+**이름**: 컴포넌트 스코프(`textfield-bottomitems`) + 하위 축(`checkbox-inset-y`) 으로,
+`--spacing-textfield-textset-icon-inset-top` 과 같은 방식이다. `-inset-y` 를 남긴 이유도 같다 —
+`--spacing-*` 는 `p-*` 뿐 아니라 `h-*` · `gap-*` 도 읽으므로, `h-…` · `gap-…` 이 읽는 순간
+오용임이 드러난다 (이 행의 높이는 파생값 40 이고 아이템 간 간격은 `spacing/4` 다).
+
+### TextFieldSlot/Text · Password 텍스트 커서 두께 — Figma 변수 아님 (레이어 실측값)
+
+| CSS 토큰 | 값 | 유틸리티 | 출처 (실측 노드) |
+|---|---|---|---|
+| `--spacing-textfield-cursor-width` | 2px (`0.125rem`) | `w-textfield-cursor-width` | `13:2389` · `13:2400` · `13:2365` · `13:2374` `cursor` 의 width 2 |
+
+적용 노드는 4개다 — 컴포넌트 세트 `13:2377`(TextFieldSlot/Text) · `13:2347`(TextFieldSlot/Password)
+의 focused variant 안에 있는 `cursor` rounded-rectangle 이고, 넷 다 width 2 · height 24 로 같다
+(`get_metadata` 2026-08-24 확인):
+
+| 노드 | variant | 부모 |
+|---|---|---|
+| `13:2389` | Text / `state=focused, isTyping=false` | `13:2384` |
+| `13:2400` | Text / `state=focused, isTyping=true` | `13:2394` |
+| `13:2365` | Password / `state=focused, isTyping=false` | `13:2360` |
+| `13:2374` | Password / `state=focused, isTyping=true` | `13:2368` |
+
+실측 width 는 `2.0000010490730347` 로 나온다 — Figma 부동소수 오차이고 설계값은 2 다. 같은 노드의
+height `24.00000008742279` 이 기존 `--spacing-24`(24px) 와 정확히 맞는 것이 그 근거다.
+
+**변수가 아니라는 근거** (2026-08-24 확인): `get_variable_defs(13:2377)` 와
+`get_variable_defs(13:2347)` 는 같은 집합을 낸다 — number 변수는 `spacing/14` · `spacing/16` ·
+`font-size/body-large` · `radius/4` · `radius/full` 뿐이고 `2` 는 없다. `get_variable_defs(27671:1222)`
+가 내보내는 spacing 컬렉션 13단(4 · 6 · 8 · 12 · 14 · 16 · 20 · 24 · 32 · 40 · 64 · 80 · 100) 에도
+`2` 가 없다.
+
+**13단 스케일에 넣지 않은 이유**는 `--spacing-hairline` · OS 바 실측값 · Tab 2px ·
+`textfield-textset-icon-inset-top` 과 같다. 그 13단은 Figma 가이드 표를 그대로 옮긴 것이고 `2` 는
+그 표에 없다.
+
+**간격이 아닌데 spacing 축에 두는 이유**: 이 값은 사각형의 두께다. 그래도 spacing 에 두는 것은
+`--spacing-hairline`(선 두께) · `--spacing-tab-indicator-height`(표시선 두께) 가 이미 세운 선례
+그대로다. Tailwind v4 에 두께용 테마 네임스페이스가 없고, 이 값을 소비하는 `w-*` 유틸리티가 읽는
+것은 `--spacing-*` 뿐이다.
+
+⚠ **값이 같은 기존 2px 토큰 3개와 합치지 않는다.** 기준은 "값이 같아서가 아니라 축이 같아서" 다.
+
+| 후보 | 합치지 않는 이유 |
+|---|---|
+| `--spacing-tab-state-layer-inset` | 인셋이고 이쪽은 두께다. 축이 다르다 |
+| `--spacing-tab-indicator-height` | 두께인 점은 같지만 Tab/Item 의 선택 표시선이다. Tab 블록은 자기 안의 두 2px 조차 역할이 달라 합치지 않았다 — 컴포넌트가 아예 다른 이쪽에 같은 판정을 적용한다 |
+| `--spacing-textfield-textset-icon-inset-top` | 같은 TextField 계열이라 가장 헷갈리는 후보. 저쪽은 `35:14458`(보조 텍스트 줄) 에서 16px 아이콘을 첫 줄에 맞추는 **상단 인셋**이고, 이쪽은 `13:2377` · `13:2347`(입력 행) 안 사각형의 **두께**다. 저쪽은 보조 텍스트 행 높이(14px × 1.5 = 21) 에서 파생돼 그 폰트가 바뀌면 따라 움직이지만 이쪽은 커서 자체의 굵기라 따라가지 않는다. 이름을 빌려 쓰면 `w-textfield-textset-icon-inset-top` 이 되어 이름이 자리를 잘못 말한다 |
+
+`--spacing-hairline` 이 1px 두 실측값을 합친 것과 대비된다: 그 둘은 "이 시스템에서 가장 얇은 선"
+이라는 하나의 시스템 개념이었고, 여기 2px 넷은 각자 다른 컴포넌트의 개별 치수다.
+
+**이름**: 컴포넌트 스코프(`textfield`) + 하위 축(`cursor-width`) 으로,
+`--spacing-textfield-textset-icon-inset-top` 과 같은 방식이다. 스코프가 `textfield-textset` ·
+`textfield-bottomitems` 보다 한 단계 얕은 이유는 이 커서가 한 세트 전용이 아니라 `13:2377` ·
+`13:2347` 두 세트에 같은 값으로 함께 있기 때문이다 — `textfield-text` 로 좁히면 Password 쪽에서
+쓰는 것이 이름과 어긋난다. `-width` 를 남긴 이유는 `--spacing-*` 가 `w-*` 뿐 아니라 `h-*` · `p-*`
+도 읽기 때문이다.
+
+### [Field Text Set] Label 라벨 ↔ 필수 표시 간격 — Figma 변수 아님 (레이어 실측값)
+
+| CSS 토큰 | 값 | 유틸리티 | 출처 (실측 노드) |
+|---|---|---|---|
+| `--spacing-textfield-label-gap` | 2px (`0.125rem`) | `gap-textfield-label-gap` | 주 컴포넌트 `35:14369` 인스턴스 6개의 `content` 프레임 — `label` 오른쪽 끝 42 ↔ `required` x=44 |
+
+주 컴포넌트 `35:14369`("[Field Text Set] Label") 는 다른 페이지에 있어 `get_metadata` 가
+"invalid node selection" 을 낸다. **인스턴스 경로로 조회해 직접 확인했다** (2026-08-25).
+6개 인스턴스 전부에서 좌표가 문자 단위로 같다:
+
+| 인스턴스 경로 | 부모 | `label` | `required` | `content` 폭 |
+|---|---|---|---|---|
+| `I13:2191;35:14371` | TextField/Text `13:2188` | x=0 w=42 | x=44 w=9 | 53 |
+| `I13:2201;35:14371` | TextField/Text `13:2188` | x=0 w=42 | x=44 w=9 | 53 |
+| `I13:2206;35:14371` | TextField/Text `13:2188` | x=0 w=42 | x=44 w=9 | 53 |
+| `I13:2170;35:14371` | TextField/Password `13:2167` | x=0 w=42 | x=44 w=9 | 53 |
+| `I13:2180;35:14371` | TextField/Password `13:2167` | x=0 w=42 | x=44 w=9 | 53 |
+| `I13:2185;35:14371` | TextField/Password `13:2167` | x=0 w=42 | x=44 w=9 | 53 |
+
+간격 = 44 − 42 = **2**. 부모 폭 53 = 42 + 2 + 9 로 정확히 떨어진다 — `cursor-width` 때와 달리
+부동소수 오차가 전혀 없으므로 반올림 부산물이 아니라 선언된 itemSpacing 2 다.
+
+**변수가 아니라는 근거** (2026-08-25 확인): `get_variable_defs(13:2188)` 와
+`get_variable_defs(13:2167)` 의 number 변수는 `spacing/4` · `8` · `12` · `14` · `16` ·
+`font-size/label-large` · `font-size/body-large` · `font-size/body-small` · `radius/4` 뿐이고
+`2` 는 없다. 더 결정적으로 **같은 트리 안의 다른 gap 다섯 개는 전부 변수에 묶여 있는데 이 라벨
+gap 만 묶이지 않았다** — `2` 가 스케일 값이었다면 바로 옆 gap 들을 묶으면서 이것만 남길 이유가
+없다. 묶이지 않았다는 사실 자체가 개별 실측 보정이라는 신호다. (`--spacing-hairline` · Tab 2px ·
+`textset-icon-inset-top` · `cursor-width` 가 쓴 var() 판정 시험을 형제 노드 수준으로 적용한 것)
+
+---
+
+#### ⚠ 2px 토큰이 5개가 됐다 — `--spacing-2` 를 스케일에 넣을 것인가
+
+이 토큰으로 저장소의 2px 토큰이 5개가 된다. "예외가 쌓이면 규칙이 아니라 스케일을 의심하라" 는
+신호일 수 있어 정면으로 따졌다. **결론: 넣지 않는다.** 다음 사람이 같은 고민을 반복하지 않도록
+근거를 남긴다.
+
+**1. 스케일의 권위 있는 출처가 2 를 배제한다 (결정적)**
+
+앞의 네 건은 "13단은 Figma **가이드 표** 그대로이고 2 는 그 표에 없다" 로 기각했다. 표 판독은
+옮겨 적다 빠뜨렸을 가능성이 남는다. 그러나 `get_variable_defs(27671:1222)` 는 가이드 표 판독이
+아니라 이 파일의 spacing **변수 컬렉션 자체**를 내보내고, 결과가 정확히 13단이다:
+
+```
+4 · 6 · 8 · 12 · 14 · 16 · 20 · 24 · 32 · 40 · 64 · 80 · 100
+```
+
+즉 "표에 안 적혀 있다" 가 아니라 **"디자인 시스템의 변수 컬렉션에 2 라는 단이 존재하지 않는다"**
+다. 스케일은 누락이 있을 수 있는 표가 아니라 권위 있는 집합이고, 디자인 팀은 2 를 단으로 만든
+적이 없다. 5번째 2px 앞에서도 기각 논리는 유효하며, 오히려 근거가 강해졌다.
+
+**2. 5건은 "같은 단의 반복" 이 아니라 "다른 축의 산재" 다**
+
+| 토큰 | 축 | 컴포넌트 계열 |
+|---|---|---|
+| `--spacing-tab-indicator-height` | 표시선 두께 | Tab/Item |
+| `--spacing-tab-state-layer-inset` | 상태 레이어 인셋 | Tab/Item |
+| `--spacing-textfield-textset-icon-inset-top` | 아이콘 상단 인셋 | TextFieldTextSet `35:14458` |
+| `--spacing-textfield-cursor-width` | 커서 두께 | TextFieldSlot `13:2377` · `13:2347` |
+| `--spacing-textfield-label-gap` | 라벨 ↔ `*` 간격 | Field Text Set Label `35:14369` |
+
+누락된 단이라면 **같은 축**이 반복돼야 한다. 무관한 축·무관한 컴포넌트에 흩어진 2px 은
+"1px 그리드 UI 에서 눈에 보이는 가장 작은 보정이 2 다" 라는 물리적 사실일 뿐 스케일 단이 아니다.
+
+**3. "이번 건은 gap 이라 스케일 소속 주장이 강하다" 는 반론 — 인정하되 결론을 뒤집지 못한다**
+
+이번 건이 다섯 중 유일하게 진짜 "두 요소 사이 간격" 인 것은 맞다. 그러나 그것은
+**spacing 네임스페이스에 둘 이유**이지 **13단 스케일의 단이 될 이유**가 아니다. 그 둘은 다른
+질문이다. "어느 네임스페이스인가" 는 어떤 CSS 속성이 소비하는지로 답하고, "스케일 단인가" 는
+디자인 시스템이 그것을 단으로 선언했는지로 답한다. 후자의 답은 위 1번에서 이미 나왔다.
+gap 이라는 이유로 스케일에 넣으면, 변수로 묶이지 않은 모든 일회성 gap 이 단이 될 수 있다.
+
+**4. 넣었을 때의 비용**
+
+- `--spacing-*: initial` 로 Tailwind 동적 spacing 을 꺼 둔 이유가 스케일 밖 값을 조용히
+  통과시키지 않으려는 것인데, `--spacing-2` 는 `p-2` · `m-2` · `gap-2` · `w-2` · `h-2` ·
+  `size-2` · `inset-2` … 유틸리티 한 벌을 통째로 연다.
+- Tailwind 기본 `p-2` 는 8px 다. 이 저장소가 이미 경고하는 "`p-4` 는 16px 이 아니라 4px" 함정이
+  하나 더 늘어난다.
+- 기존 2px 토큰 4개를 함께 정리하지 않으면 **"단 + 예외 5개"** 가 되어 지금보다 나빠진다.
+  정리하려면 컴포넌트 파일을 건드려야 해 **원칙 3(Surgical Changes)** 을 벗어나고,
+  `token-guardian` 의 편집 권한(`src/tokens/**`) 밖이다.
+
+**5. CLAUDE.md 목적 1 의 "예외 5건" 반증 조건은 여기에 걸리지 않는다**
+
+그 조건이 세는 것은 `token-exempt` 주석 — 즉 **토큰 체계를 빠져나간 raw 값**이다.
+여기 5개는 빠져나간 값이 아니라 **전부 토큰이다.** 위반 건수는 그대로 0 이고, 예외 건수도 0 이다.
+"2px 토큰 5개" 와 "예외 5건" 은 세는 대상이 다르다.
+
+> **다음 사람에게**: 이 판단을 뒤집으려면 `get_variable_defs(27671:1222)` 에 `spacing/2` 가
+> 나타나는지부터 확인하라. 나타나면 그때는 스케일에 정식 추가하고 기존 2px 토큰 5개의 통합
+> 여부를 축 단위로 재검토하는 것이 맞다. 나타나지 않는 한, 2px 이 6개가 되든 7개가 되든
+> 위 2번(축의 산재) 이 성립하는 동안에는 같은 결론이다.
+
+---
+
+⚠ **값이 같은 기존 2px 토큰 4개와 합치지 않는다.** 기준은 "값이 같아서가 아니라 축이 같아서" 다.
+
+| 후보 | 합치지 않는 이유 |
+|---|---|
+| `--spacing-tab-indicator-height` | 선택 표시선의 **두께**. 이쪽은 두 요소 사이 **간격**이다 |
+| `--spacing-tab-state-layer-inset` | **인셋**은 한 요소와 그 경계 사이고, 이쪽은 나란한 두 요소 사이다 |
+| `--spacing-textfield-textset-icon-inset-top` | 같은 TextField 계열이라 가장 헷갈리는 후보. 저쪽은 `35:14458` 에서 16px 아이콘을 첫 줄에 맞추는 **세로 인셋**이고 이쪽은 `35:14369` 에서 라벨과 `*` 사이 **가로 간격**이다. 저쪽은 보조 텍스트 행 높이(14 × 1.5) 에서 파생돼 폰트가 바뀌면 따라 움직이지만 이쪽은 따라가지 않는다 |
+| `--spacing-textfield-cursor-width` | 사각형의 **굵기**. 이쪽은 **간격**이다 |
+
+`--spacing-hairline` 이 1px 두 실측값을 합친 것과 대비된다: 그 둘은 "이 시스템에서 가장 얇은 선"
+이라는 하나의 시스템 개념이었고, 여기 2px 다섯은 각자 다른 컴포넌트의 개별 치수다.
+
+**이름**: 컴포넌트 스코프(`textfield`) + 하위 축(`label-gap`) 으로,
+`--spacing-textfield-cursor-width` 와 같은 방식이다. 스코프가 `textfield-textset` 보다 한 단계
+얕은 이유도 같다 — 이 라벨은 한 세트 전용이 아니라 `13:2188` · `13:2167` 두 세트에 같은 값으로
+함께 있어서, `textfield-text` 로 좁히면 Password 쪽에서 쓰는 것이 이름과 어긋난다.
+`-gap` 을 남긴 이유는 `--spacing-*` 가 `gap-*` 뿐 아니라 `p-*` · `w-*` · `h-*` 도 읽기
+때문이다 — `w-textfield-label-gap` 이 되면 읽는 순간 오용임이 드러난다.
+
 ---
 
 ## Radius — `src/tokens/design-tokens.css`
@@ -436,9 +714,52 @@ Figma 변수명을 그대로 보존한다: `font/display/large-strong` → `.fon
 |---|---|---|
 | `lineHeight: 1.2999999523162842` | 130% 배율 | `line-height: 1.3` |
 | `lineHeight: 1.5` | 150% 배율 | `line-height: 1.5` |
-| `lineHeight: 100` | **100%** | `line-height: 1` |
+| `lineHeight: 100` | **AUTO** (100% 아님 — 아래 재확인 참조) | `line-height: normal` |
 | `letterSpacing: -2` | **-2%** | `letter-spacing: -0.02em` |
 | `letterSpacing: 0` | 0 | (미지정) |
+
+#### `lineHeight: 100` 재확인 — 최초 판정이 틀렸다 (2026-08-24)
+
+최초 판정은 `100` 을 "100%" 로 읽고 `line-height: 1` 로 옮겼다. **재확인 결과 AUTO 다.**
+근거 넷이 같은 방향을 가리킨다.
+
+1. **Figma 자체 codegen 이 답을 준다.** `get_design_context`(`I27657:3102;13:1745` —
+   `TextButton` 의 label 텍스트 노드)가 **`leading-[normal]`** 을 방출한다.
+   CSS `line-height: normal` = AUTO 다. 스타일이 진짜 100% 였다면
+   `leading-none` 또는 `leading-[100%]` 이 나온다.
+2. **대조군이 이를 반증 가능하게 만든다.** 같은 파일의 title 텍스트 노드
+   (`27683:4403`)에는 **`leading-[1.3]`** 을 방출한다. 즉 codegen 이 아무 때나
+   `normal` 을 내는 것이 아니라, label 계열에 특정된 출력이다.
+3. **기하 실측.** 16 짜리 label 텍스트 노드가 세로 19 다
+   (`I27657:3102;13:1745`, `1:4064` 둘 다). 100%(=16) 이면 16 이어야 한다.
+   19 / 16 = 1.1875 ≈ Pretendard 의 normal 행간 비율.
+4. **직렬화 계열 불일치.** 이 컬렉션은 PIXELS 를 실제 값(`84`·`48`·`28`)으로,
+   PERCENT 를 배율(`1.2999…`·`1.5`)로 낸다. 130% 가 `1.2999…` 로 나오는
+   직렬화기라면 100% 는 `1.0` 이어야 한다. `100` 이 배율 계열을 벗어난 정수인 것은
+   AUTO 의 sentinel 표기다.
+
+**어디서 드러났는가.** Header 슬롯의 `contentType=buttonGroup` 이 원인을 노출시킨 최초의
+자리다. `Button` 은 `min-h-button-height` 가, `TextButton` 은 24 아이콘이 라벨 라인박스를
+덮어 가렸고, buttonGroup 은 강제 높이도 아이콘도 없어 차이가 그대로 높이에 나왔다.
+
+실측 대조 (헤드리스 Chrome, 상하 패딩 10 + 16 크기 · 500 굵기 라벨):
+
+| line-height | 라벨 | 컨테이너 | Figma 실측 39 |
+|---|---|---|---|
+| `1` (이전) | 16 | 36 | ✗ 3 작다 |
+| `normal` (현행) | 19 | **39** | ✓ 일치 |
+
+**적용 범위**: label 계열 `@utility` **6종 전부**. 6종이 같은 `lineHeight: 100`
+직렬화를 공유하므로 한 상태로 둔다. `font-label-large` 외 5종은
+`src/stories/**` 스와치 전용이라 컴포넌트 영향이 없다.
+
+⚠ **직접 실증된 것은 `font/label/large` 하나다.** 나머지 5종은 이 Figma 파일에
+측정 가능한 텍스트 노드가 없어 직렬화 동일성이 근거다.
+
+⚠ **`normal` 은 서체 의존이라 결정론적이지 않다** — AUTO 의 성질 자체가 그렇고 Figma 도
+같다. `1.1875` 로 못박으면 서체와 무관하게 19 가 보장되지만, 한 서체의 메트릭 비율을
+토큰에 하드코딩하게 되고 다른 크기에서 소수 높이(21.375 · 16.625 · 14.25)가 나온다.
+사용자 결정으로 `normal` 을 택했다.
 
 ### 서체 · 굵기
 
@@ -467,12 +788,12 @@ Figma 변수명을 그대로 보존한다: `font/display/large-strong` → `.fon
 | `font/body/medium` | `.font-body-medium` | 16px | 500 | 1.5 | 0 |
 | `font/body/small-700` | `.font-body-small-700` | 14px | 700 | 1.5 | 0 |
 | `font/body/small` | `.font-body-small` | 14px | 500 | 1.5 | 0 |
-| `font/label/xLarge-700` | `.font-label-x-large-700` | 18px | 700 | 1 | 0 |
-| `font/label/large-strong` | `.font-label-large-strong` | 16px | 700 | 1 | 0 |
-| `font/label/large` | `.font-label-large` | 16px | 500 | 1 | 0 |
-| `font/label/medium-700` | `.font-label-medium-700` | 14px | 700 | 1 | 0 |
-| `font/label/medium` | `.font-label-medium` | 14px | 500 | 1 | 0 |
-| `font/label/small` | `.font-label-small` | 12px | 500 | 1 | 0 |
+| `font/label/xLarge-700` | `.font-label-x-large-700` | 18px | 700 | normal | 0 |
+| `font/label/large-strong` | `.font-label-large-strong` | 16px | 700 | normal | 0 |
+| `font/label/large` | `.font-label-large` | 16px | 500 | normal | 0 |
+| `font/label/medium-700` | `.font-label-medium-700` | 14px | 700 | normal | 0 |
+| `font/label/medium` | `.font-label-medium` | 14px | 500 | normal | 0 |
+| `font/label/small` | `.font-label-small` | 12px | 500 | normal | 0 |
 
 `--text-*: initial`, `--font-weight-*: initial` 로 Tailwind 기본 font-size·weight 유틸리티를 껐다.
 `text-lg`·`font-semibold` 는 더 이상 생성되지 않는다.
@@ -536,13 +857,19 @@ Tailwind v4 는 프로젝트를 자동 스캔하므로 `src/tokens/README.md` �
 | `Button.tsx` | `px-sm` (sm) | `px-8` | 8px → 8px |
 | `Button.tsx` | `px-lg` (md) | `px-16` | 16px → 16px |
 | `Button.tsx` | `px-xl` (lg) | `px-24` | 24px → 24px |
-| `Button.tsx` | `text-sm` (sm·md) | `font-label-medium` | 14px/20px 행간 → 14px/1.0 |
-| `Button.tsx` | `text-md` (lg) | `font-label-large` | 16px/24px 행간 → 16px/1.0 |
+| `Button.tsx` | `text-sm` (sm·md) | `font-label-medium` | 14px/20px 행간 → 14px/`normal` (AUTO) |
+| `Button.tsx` | `text-md` (lg) | `font-label-large` | 16px/24px 행간 → 16px/`normal` (AUTO) |
 | `Button.tsx` | `font-sans font-medium` | (제거) | `@utility` 가 서체·굵기를 포함 |
 | `App.tsx` | `gap-xl` | `gap-24` | 24px → 24px |
 | `App.tsx` | `gap-sm` | `gap-8` | 8px → 8px |
 | `App.tsx` | `text-2xl font-semibold tracking-tight` | `font-title-large-strong` | 24px/600 → 24px/**700**, 자간 -0.02em |
 | `App.tsx` | `text-sm` | `font-body-small` | 14px/20px 행간 → 14px/1.5 |
+
+> **위 두 label 행은 2026-08-24 에 정정됐다.** 최초 기록은 행간을 `1.0` 으로 적었는데,
+> 그것은 Figma `lineHeight: 100` 을 "100%" 로 읽은 판정에서 나온 값이다.
+> 그 판정이 틀렸음이 확인돼(`### 단위 판정` 의 재확인 절 참조) label 계열 6종이
+> `line-height: normal` 로 바뀌었다. `Button` 의 렌더 높이는 `min-h-button-height` 가
+> 흡수하므로 이 변경으로 바뀌지 않는다 (헤드리스 실측 55 불변).
 | `Button.stories.tsx` | `gap-3` | `gap-12` | 12px → 12px (Tailwind 기본값 → 토큰) |
 
 **외형이 바뀐 것**: Button 라디우스 8px→4px, Button 라벨 행간, h1 굵기 600→700.

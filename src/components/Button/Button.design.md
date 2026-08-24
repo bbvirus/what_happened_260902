@@ -73,7 +73,7 @@ symbol 1:4049  (… state=focused …)   82×55
 
 | 값 | 출처 | 결론 |
 |---|---|---|
-| 라벨 타이포 | Figma 스타일 `font/label/large` = size `font-size/label-large`(16) · weight 500 · lineHeight 100 · letterSpacing 0. **12개 variant 전부 동일** | 기존 `font-label-large` (`1rem` / `--font-weight-base`=500 / `line-height:1`). **값 일치 → 재사용** |
+| 라벨 타이포 | Figma 스타일 `font/label/large` = size `font-size/label-large`(16) · weight 500 · lineHeight **AUTO** · letterSpacing 0. **12개 variant 전부 동일** | 기존 `font-label-large` (`1rem` / `--font-weight-base`=500 / `line-height:normal`). **값 일치 → 재사용** (⚠ 정정 있음 — 아래 참조) |
 | 좌우 padding | Figma 변수 `spacing/20` = 20 | `--spacing-20` = `1.25rem`. 일치 → `px-20` |
 | 상하 padding | Figma 변수 `spacing/14` = 14 | `--spacing-14` = `0.875rem`. 일치 → `py-14` |
 | content 내부 간격 | Figma 변수 `spacing/4` = 4 | `--spacing-4` = `0.25rem`. 일치 → `gap-4` |
@@ -92,6 +92,29 @@ symbol 1:4049  (… state=focused …)   82×55
 | focused 링 | 인스턴스 `35:12817`, `outerFocus=true` | `StateLayerFocused` 재사용 |
 | 루트 clip | `state=focused` 3종만 clip 없음. 나머지 9종은 `overflow-clip` | `overflow-hidden` / `overflow-visible` |
 | transition · shadow | Figma 에 정의 없음 | 코드에 들어갈 자리가 없다. 교체 전 코드의 `transition-colors` 는 Figma 근거가 없어 넣지 않았다 (원칙 2) |
+
+### 정정 — 라벨 타이포의 `lineHeight 100` 은 100% 가 아니라 AUTO 였다
+
+위 표의 라벨 타이포 행은 이전에 Figma 의 `lineHeight: 100` 을 **100%** 로 읽고, 대응 토큰을
+`font-label-large` (`line-height:1`) 로 적었다. **그 해석이 오판정이었다.**
+
+`token-guardian` 이 Figma 를 재확인해 **AUTO** 로 확정했다. 결정적 근거는 codegen 이
+label 텍스트 노드에 **`leading-[normal]`** 을 방출한다는 것이다 — 대조군인 title 노드에는
+`leading-[1.3]` 을 방출하므로 codegen 이 아무 때나 `normal` 을 내는 것이 아니다. 보강 근거는
+16 크기 label 텍스트 노드의 세로 크기가 19 라는 것(100% 면 16), 그리고 직렬화 계열이 어긋난다는
+것이다 — 130% 는 `1.2999…`, 150% 는 `1.5` 인데 label 만 정수 `100` 이다.
+
+**적용**: 사용자 결정으로 `typography.tokens.css` 의 label 계열 `@utility` 6종 전부
+`line-height: 1` → `line-height: normal` 로 바뀌었다.
+
+**재사용 판정 자체는 그대로 옳다** — 오히려 이제 진짜로 값이 일치한다. 바뀐 것은 근거의 내용이고
+결론이 아니다.
+
+**`Button` 의 렌더는 영향받지 않는다.** 실측 높이가 4개 variant 전부 **55 불변**이다.
+`min-h-button-height`(55)가 라인박스 증가를 흡수하기 때문이다 — 라벨 19 + `spacing/14`×2 = 47 로
+여전히 55 아래다. 이 토큰이 바뀌었는데 Button 이 그대로인 이유가 이것이다. 실제로 어긋남이
+드러난 곳은 높이 제약이 없는 hug 컨테이너였다
+(`HeaderSlotLeftEndItems` `contentType=buttonGroup`, 36 → 39).
 
 ### `button/disabled-text` — Figma 내부 불일치
 

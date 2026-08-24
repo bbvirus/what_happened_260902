@@ -35,25 +35,25 @@ export interface HeaderSlotLeftEndItemsProps extends HTMLAttributes<HTMLDivEleme
  * `Button` 의 55 가 강제된 높이로 판정된 근거는 12 variant 가 **전부** 55 였다는 것이고,
  * 여기서는 두 variant 가 다르다 — 그래서 불변인 것은 높이가 아니라 패딩이다.
  *
- * ## ⚠ buttonGroup 은 Figma 와 높이가 어긋난다 — 미해결, 원인은 이 파일 밖이다
- * **iconGroup 은 일치한다.** 자식 `Icon` 이 정확히 24 라서 10 + 24 + 10 = 44 이고
- * Figma 실측 44 와 같다. 리뷰어가 헤드리스 브라우저로 계측해 확인했다.
+ * ## ✅ buttonGroup 의 높이 불일치는 해소됐다 (원인은 이 파일 밖이었다)
+ * 두 variant 모두 지금은 Figma 실측과 일치한다. iconGroup 44, buttonGroup 39 —
+ * 리뷰어가 헤드리스 브라우저로 계측해 확인했다.
  *
- * **buttonGroup 은 일치하지 않는다.** 아래 두 수는 서로 다른 것을 재고 있다:
- * · Figma 실측 높이 39 — Figma 는 라벨의 세로 크기를 19 로 잡는다 (Figma 텍스트 메트릭).
- * · 실제 렌더 높이 **36** — 브라우저는 같은 라벨을 16 으로 만든다. shipped CSS 의
- *   `font-label-large` 가 line-height 를 1 로 두어 라인박스가 글자 크기와 같아지기 때문이다.
- *   10 + 16 + 10 = 36 이고, Figma 보다 3 작다. 추정이 아니라 결정론적인 값이다.
+ * 한때 buttonGroup 만 **36** 으로 렌더돼 Figma 39 보다 3 작았다. 원인은 이 컨테이너가
+ * 아니었다 — 상하 패딩 10 · gap 16 · 정렬은 처음부터 Figma 와 같았고, 차이는 전부 라벨
+ * 라인박스에서 나왔다. Figma 는 16 크기 라벨의 세로 크기를 19 로 잡는데, 당시
+ * `font-label-large` 가 line-height 를 1 로 둬서 브라우저 라인박스가 16 이었다.
+ * iconGroup 은 자식 `Icon` 이 텍스트가 아니라 고정 크기 24 라서 이 문제가 없었다.
  *
- * 즉 이 컴포넌트의 주석에서 "39 = 19 + 10 + 10" 은 **Figma 쪽 산술일 뿐 코드가 만드는 값이
- * 아니다.** 이전 판(그렇게 단정했던 주석)은 이 어긋남을 감추고 있었다.
+ * 풀린 경로: Figma 변수 `font/label/large` 의 `lineHeight: 100` 은 100% 가 아니라 **AUTO** 였다.
+ * `token-guardian` 이 재확인해 확정했고(codegen 이 label 텍스트 노드에는 행간을 `normal` 로
+ * 방출하는데, 대조군인 title 노드에는 구체적인 배수로 방출한다), 사용자 결정으로
+ * `typography.tokens.css` 의 label 계열 유틸리티 6종이 line-height `normal` 로 바뀌었다.
+ * 이 파일은 `font-label-large` 를 그대로 쓴다 — 값은 토큰 쪽에서 고쳐졌다.
  *
- * 이 자리에서 덮지 않은 이유: 패딩 10 은 Figma 가 방출한 값 그대로이고 차이는 전부 라벨
- * 라인박스에서 나온다. 원인은 `typography.tokens.css` 의 `font-label-large` line-height 이며
- * 그 파일은 이 작업 범위 밖이자 편집 권한 밖이다 (토큰은 `token-guardian` 담당).
- * 패딩·높이·line-height 를 조정해 36 을 39 로 맞추면 원인이 숨는다.
- * 판정에 필요한 것은 Figma `font/label/large` 의 lineHeight 가 AUTO 인지 100% 인지의
- * 재확인이고, 그것은 `token-guardian` 의 일이다.
+ * 그래서 이 컴포넌트는 패딩·높이를 조정해 36 을 39 로 맞추지 않았다. 맞췄다면 공유 타이포
+ * 토큰의 오판정이 숨은 채 같은 토큰을 쓰는 다른 자리에 그대로 남았을 것이다.
+ * `Button` 은 `min-h-button-height` 가 라인박스 증가를 흡수해 이 변경 뒤에도 55 불변이다.
  *
  * ## 내용물이 `children` 인 이유
  * Figma 가 방출한 property 는 `contentType` · `hasSlotEnd1..3`(boolean) ·

@@ -9,6 +9,23 @@ export interface HeaderProps {
   hasTitle?: boolean;
   /** Figma component property `hasSlotStart`. 뒤로가기 아이콘 노출 여부. */
   hasSlotStart?: boolean;
+  /**
+   * 뒤로가기를 눌렀을 때. **넘기면 아이콘이 `<button>` 이 되고, 넘기지 않으면
+   * 이전과 같이 그냥 아이콘이다.**
+   *
+   * ## Figma 근거가 없다. 요청자 결정이 근거다
+   * 이 파일은 원래 뒤로가기를 `<button>` 으로 만들지 않았고, 그 이유를
+   * *"Figma 27657:3125 는 상호작용이 정의되지 않은 프레임이고, component property 에도
+   * 클릭 축이 없다"* 로 적어 두었다. 그 관측은 **지금도 그대로 맞다.**
+   * 축을 연 근거는 요청자 결정이다: *"회원 가입 이후 상단 뒤로가기 버튼 누르면
+   * 로그인으로 돌아가게 해줘."*
+   *
+   * 기본값을 두지 않은 이유: 넘기지 않은 호출부의 렌더 결과를 그대로 두기 위함이다.
+   * 클릭 축이 없는 화면에서 아무 일도 하지 않는 `<button>` 이 생기면, 키보드
+   * 사용자에게 탭 정지점만 늘고 누르면 아무 일도 없는 컨트롤이 된다.
+   * (`TextField*` 의 `onClear` 와 같은 판단)
+   */
+  onSlotStartClick?: () => void;
   /** Figma component property `hasSlotEnd`. 우측 슬롯 노출 여부. Figma 기본값이 꺼짐이다. */
   hasSlotEnd?: boolean;
   /** 우측 슬롯의 내용물. `hasSlotEnd` 가 켜졌을 때만 렌더된다. */
@@ -84,6 +101,7 @@ export function Header({
   hasTitle = true,
   hasSlotStart = true,
   hasSlotEnd = false,
+  onSlotStartClick,
   children,
 }: HeaderProps) {
   return (
@@ -94,7 +112,24 @@ export function Header({
             Figma 는 이 프레임을 늘 두고 안의 아이콘 인스턴스 27657:3126 만 켜고 끈다.
             그래서 hasSlotStart 는 프레임이 아니라 아이콘에 걸린다. */}
         <div className="py-header-item-inset-y flex shrink-0 items-center">
-          {hasSlotStart ? <Icon name="chevronLeft-large" /> : null}
+          {hasSlotStart ? (
+            onSlotStartClick ? (
+              // 아이콘이 유일한 의미 전달자라 접근성 이름이 필요하다.
+              // UA 기본 포커스 링은 끄지 않는다 — 대체 링을 그리는 Figma variant 가
+              // 이 자리에 없어서, 끄면 포커스 표시가 사라진다 (WCAG 2.4.7).
+              // `Button.tsx` 가 세운 규율과 같다: 끄는 것은 대신 그릴 때뿐이다.
+              <button
+                type="button"
+                aria-label="뒤로 가기"
+                onClick={onSlotStartClick}
+                className="flex items-center"
+              >
+                <Icon name="chevronLeft-large" />
+              </button>
+            ) : (
+              <Icon name="chevronLeft-large" />
+            )
+          ) : null}
         </div>
 
         {/* content 27657:3127 — 행 높이 44 를 쓰는 유일한 노드.

@@ -191,7 +191,7 @@ hover · pressed · disabled 상태도 이 노드에 정의돼 있지 않아 만
 | gap 4 | `spacing/4` | `--spacing-4` | `gap-4` |
 | 라벨 색 `#747474` | `text/secondary` | `--color-text-secondary` | `text-text-secondary` (`color="secondary"`, 기본값) |
 | 라벨 색 `#1a1a1a` | `text/primary` | `--color-text-primary` | `text-text-primary` (`color="primary"`) |
-| 라벨 타이포 16/500/100%/0 | `font/label/large` | `@utility font-label-large` | `font-label-large` |
+| 라벨 타이포 16/500/**AUTO**/0 | `font/label/large` | `@utility font-label-large` | `font-label-large` (⚠ 정정 있음 — 아래 참조) |
 | 아이콘 색 `#747474` | `icon/secondary` | `--color-icon-secondary` | `Icon color="secondary"` (`color="secondary"`, 기본값) |
 | 아이콘 색 `#1a1a1a` | — (토큰 쌍 구조에서 도출, 아래 `## color` 참조) | `--color-icon-primary` | `Icon color="primary"` (`color="primary"`) |
 | 아이콘 24×24 | — (실측) | `--spacing-24` | `Icon` 내부 `size-24` |
@@ -199,6 +199,30 @@ hover · pressed · disabled 상태도 이 노드에 정의돼 있지 않아 만
 
 `inline-flex` · `items-center` · `justify-center` · `whitespace-nowrap` 은 시각 값이 아니라
 레이아웃 유틸리티다 (Figma auto-layout 의 방향·정렬과 텍스트 hug 에 대응).
+
+#### 정정 — 라벨 타이포의 행간을 `100%` 로 읽은 것은 오판정이었다. 실제는 AUTO 다
+
+위 표는 이전에 라벨 타이포를 `16/500/**100%**/0` 으로 적었다. Figma 원본이 내보내는 문자열이
+`lineHeight: 100` 이라 그것을 백분율로 읽은 것이다. **그 해석이 틀렸다 — 실제는 AUTO 다.**
+
+`token-guardian` 이 Figma 를 재확인했다. 결정적 근거는 codegen 이 이 컴포넌트의 label 텍스트
+노드(`I27657:3102;13:1745`)에 **`leading-[normal]`** 을 방출한다는 것이다 — 대조군인 title
+노드(`27683:4403`)에는 `leading-[1.3]` 을 방출하므로 codegen 이 아무 때나 `normal` 을 내는 것이
+아니다. 보강 근거 2건: 16 크기 label 텍스트 노드의 세로 크기가 19 다(100% 였다면 16).
+그리고 직렬화 계열이 어긋난다 — 130% 는 `1.2999…`, 150% 는 `1.5` 로 나오는데 label 만 정수
+`100` 이다.
+
+**적용**: 사용자 결정으로 `typography.tokens.css` 의 label 계열 `@utility` 6종 전부
+`line-height: 1` → `line-height: normal` 로 바뀌었다. 이 컴포넌트의 `.tsx` 는 바뀌지 않았다 —
+`font-label-large` 를 그대로 쓰고, 값은 토큰 쪽에서 고쳐졌다.
+
+**드러난 증상과 해소**: 이 컴포넌트를 담는 hug 컨테이너
+(`HeaderSlotLeftEndItems` `contentType=buttonGroup`)의 높이가 Figma 실측 39 대신 36 이었다.
+라벨 라인박스가 19 가 아니라 16 이었기 때문이다. 토큰 정정 후 **39 로 일치**한다.
+`Button` 은 `min-h-button-height`(55)가 라인박스 증가를 흡수해 **55 불변**이다.
+
+⚠ 이 문서 위쪽 "값의 출처" 표에 있는 `lineHeight 100` 은 **Figma 원본 덤프의 축자 기록**이므로
+그대로 둔다. 정정 대상은 그 숫자를 `100%` 로 **해석**한 자리다.
 
 ### 스토리 (`TextButton.stories.tsx`)
 

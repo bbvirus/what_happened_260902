@@ -310,6 +310,268 @@
   --spacing-home-indicator-inset-top: 1.3125rem; /* 21px  — 인디케이터 위 여백. 루트 27719:2194 padding-top (21 + 5 + spacing-8 = 34) */
   --spacing-home-indicator-width: 8.375rem;      /* 134px — 27719:2195 width. Figma 의 좌우 패딩 134 는 별도 여백이 아니라 402 안에서 이 폭을 가운데 두기 위한 표현이다 */
   --spacing-home-indicator-height: 0.3125rem;    /* 5px   — 27719:2195 height */
+
+  /* --- Tab 실측 치수 (Tab · TabItem) ---
+     ⚠ Figma 변수 아님, 가이드 표에도 없음. 출처는 Figma 레이어 실측값 2건이다
+     (파일 7DxkWa12fiJWOrvPIDWUcp, 섹션 27776:6988 "Tab").
+
+     변수가 아니라는 근거 (2026-08-24):
+       · get_variable_defs(27776:6988) = {border/primary, border/strong, text/primary,
+         text/secondary, family-font, font-size/label-xLarge, font/label/xLarge-strong,
+         spacing/12, spacing/14, spacing/20, radius/0, radius/4,
+         stateLayer/pressed-black, state/focused}
+       ⇒ 이 섹션 트리 전체의 number 변수는 spacing/12 · spacing/14 · spacing/20 ·
+         font-size/label-xLarge · radius/0 · radius/4 뿐이고 2 는 없다.
+         get_metadata 가 읽은 좌표·크기가 유일한 출처다.
+
+     위 spacing 13단 스케일에 끼워 넣지 않는 이유는 --spacing-hairline ·
+     OS 바 실측값과 같다: 그 13단은 Figma 가이드 표를 그대로 옮긴 것이고 2 는 그 표에
+     없다. 끼워 넣으면 "가이드 표 그대로" 라는 전제가 깨지고, 간격이 아닌 값에
+     gap-* · m-* 이 딸려 나온다.
+
+     ⚠ 아래 두 값은 둘 다 2px 이지만 합치지 않는다. --spacing-hairline 이 두 실측값을
+     합칠 때 세운 기준이 "값이 같아서가 아니라 축이 같아서" 였다. 여기서 하나는
+     선택 표시선의 두께고 다른 하나는 상태 레이어의 인셋이다 — 축이 다르고, 한쪽이
+     Figma 에서 움직여도 다른 쪽은 따라가지 않는다. clock-inset-y 와
+     indicators-height (둘 다 13px) 를 합치지 않은 것과 같은 판정이다. */
+  --spacing-tab-indicator-height: 0.125rem;   /* 2px — Tab/Item 선택 표시선 두께. 20:7629 · 20:7625 height */
+  --spacing-tab-state-layer-inset: 0.125rem;  /* 2px — Tab/Item 상태 레이어 좌·우·상 인셋. 27776:6987 · 20:7636 의 x=2 · y=2 */
+
+  /* --- TextFieldTextSet 아이콘 영역 상단 인셋 ---------------------
+     ⚠ Figma 변수 아님, 가이드 표에도 없음. 출처는 레이어 실측값이다
+     (파일 7DxkWa12fiJWOrvPIDWUcp, 컴포넌트 세트 35:14458 "TextFieldTextSet").
+
+     변수가 아니라는 근거 (2026-08-24):
+       · get_variable_defs(35:14458) = {text/secondary, family-font,
+         font-size/body-small, font/body/small, spacing/4, text/primary,
+         text/negative, status/positive, status/informative}
+         ⇒ 이 세트 트리 전체의 number 변수는 spacing/4 · font-size/body-small
+           뿐이고 2 는 없다.
+       · get_design_context(35:14596) 는 같은 `wrapper` 안에서 gap 은
+         `gap-[var(--spacing/4,4px)]` 로 내보내는데 iconarea 의 상단 인셋은
+         맨 `pt-[2px]` 로 내보낸다 — 변수였다면 이쪽도 var() 로 나왔을 것이다.
+         (--spacing-hairline · Tab 2px 이 쓴 것과 같은 판정 시험)
+
+     6개 variant 전부에서 동일하게 나타난다 — iconarea 프레임의 y=2 / pt-[2px]:
+       35:14664(default) · 35:14671(default·disabled) · 35:14599(error) ·
+       35:14563(success) · 35:14520(informative) · 35:14527(informative·disabled)
+
+     중앙 정렬의 부산물이 아니다: 행 높이 21px(14px × 1.5) 안에 16px 아이콘이므로
+     중앙이면 위아래 2.5px 이어야 하는데 실제는 위 2px · 아래 3px 이고,
+     get_design_context 도 `items-center` 가 아니라 `items-start pt-[2px]` 로
+     내보낸다. 의도된 상단 인셋이다.
+
+     위 spacing 13단 스케일에 끼워 넣지 않는 이유는 --spacing-hairline ·
+     OS 바 실측값 · Tab 2px 과 같다: 그 13단은 Figma 가이드 표를 그대로 옮긴 것이고
+     2 는 그 표에 없다. 끼워 넣으면 "가이드 표 그대로" 라는 전제가 깨지고,
+     간격이 아닌 값에 gap-* · m-* 이 딸려 나온다.
+
+     ⚠ 위 Tab 2px 토큰 2개와 값이 같지만 합치지 않는다. --spacing-hairline 이 두
+     실측값을 합칠 때 세운 기준이 "값이 같아서가 아니라 축이 같아서" 였다. Tab 쪽은
+     선택 표시선 두께와 상태 레이어 인셋이고 이쪽은 보조 텍스트 줄 안에서 아이콘을
+     첫 줄에 맞추는 인셋이다 — 축이 셋 다 다르고, 하나가 Figma 에서 움직여도 나머지는
+     따라가지 않는다. Tab 의 두 2px 을 서로 합치지 않은 것과 같은 판정이다.
+
+     이름에 -inset-top 을 남기는 이유는 --spacing-statusbar-inset-top ·
+     --spacing-home-indicator-inset-top 과 같다: --spacing-* 는 p-* 뿐 아니라
+     h-* · w-* · gap-* 도 읽는다. 이름이 자리를 말하고 있어야 오용이 읽는 순간 드러난다. */
+  --spacing-textfield-textset-icon-inset-top: 0.125rem;  /* 2px — TextFieldTextSet iconarea 상단 인셋. 35:14599 등 6개 variant 의 y=2 / pt-[2px]. 디렉터리 전체가 rem 이라 rem 으로 맞춘다 */
+
+  /* --- TextFieldSlot/Bottom/Items 체크박스 행 상하 패딩 ----------------
+     ⚠ Figma 변수 아님, 가이드 표에도 없음. 출처는 레이어 실측값이다
+     (파일 7DxkWa12fiJWOrvPIDWUcp, 컴포넌트 세트 13:2222 "TextFieldSlot/Bottom/Items").
+
+     적용 노드는 1개다: 인스턴스 13:2226 `[Checkbox]` (61 × 40) — variant
+     13:2225 `contentType=checkbox` 의 유일한 자식이다. get_metadata(13:2225) 확인.
+
+     변수가 아니라는 근거 (2026-08-24 확인):
+       · get_variable_defs(13:2225) = {icon/secondary, text/primary, family-font,
+         font-size/label-medium, font/label/medium, spacing/4}
+         ⇒ 이 variant 트리 전체의 number 변수는 spacing/4 · font-size/label-medium
+           뿐이고 10 은 없다.
+       · get_variable_defs(27671:1222) 는 이 파일의 spacing 컬렉션 전체를 내보낸다 —
+         spacing/4 · 6 · 8 · 12 · 14 · 16 · 20 · 24 · 32 · 40 · 64 · 80 · 100.
+         13단 전부이고 10 은 없다 (8 과 12 사이가 비어 있다).
+       · get_design_context(13:2225) 는 같은 노드 13:2226 에서 gap 은
+         `gap-[var(--spacing/4,4px)]` 로 내보내는데 상하 패딩은 맨 `py-[10px]` 로
+         내보낸다 — 변수였다면 이쪽도 var() 로 나왔을 것이다.
+         (--spacing-hairline · Tab 2px · textset-icon-inset-top 이 쓴 것과 같은 시험)
+
+     높이 40 을 고정하는 대안(--spacing-control-md)을 쓰지 않는 이유:
+       · get_design_context(13:2225) 가 13:2226 에 방출하는 것은 `py-[10px]` 뿐이고
+         높이 클래스가 **없다**. 높이가 강제된 제약이라면 Button 1:4004 의
+         min-h-[55px] · Header 27657:3127 의 h-[44px] min-h-[44px] 처럼 나왔을 것이다.
+       · 40 은 파생값이다 — 자식 중 가장 큰 것이 체크박스 상자 20
+         (I13:2226;13:3940, size-[20px])이고 20 + 10 + 10 = 40 으로 symbol 높이와
+         정확히 맞는다. 라벨은 14px 이라 높이를 결정하지 않는다.
+       · --spacing-control-md 는 위 control 높이 축 주석대로 "Figma 출처 없음" 인
+         기존 저장소 값이다. Figma 실측 파생값을 그 축으로 표현하면 토큰마다
+         출처 표기가 달라져 축 단위로 읽을 수 없게 된다.
+       ⇒ 선언된 값은 높이가 아니라 패딩 10 이다. --spacing-header-item-inset-y 가
+         44 · 39 두 높이를 하나의 패딩에서 파생시킨 것과 같은 구조다.
+
+     위 spacing 13단 스케일에 끼워 넣지 않는 이유는 --spacing-hairline ·
+     OS 바 실측값 · Tab 2px · textset-icon-inset-top 과 같다: 그 13단은 Figma 가이드
+     표를 그대로 옮긴 것이고 바로 위 get_variable_defs(27671:1222) 결과가 그 표에
+     10 이 없음을 확인해 준다. 끼워 넣으면 "가이드 표 그대로" 라는 전제가 깨지고,
+     간격이 아닌 값에도 스케일로 읽힐 여지가 생긴다.
+
+     ⚠ 값이 같은 기존 토큰 2개(--spacing-header-item-inset-y ·
+     --spacing-statusbar-inset-top, 둘 다 0.625rem)와 합치지 않는다. --spacing-hairline
+     이 두 실측값을 합칠 때 세운 기준이 "값이 같아서가 아니라 축이 같아서" 였다.
+     header-item-inset-y 는 Header 행 안 아이템 묶음의 패딩이고, statusbar-inset-top 은
+     OSBarTopNavigation 이 화면 최상단에 두는 여백이며, 이쪽은 TextField 아래 슬롯
+     체크박스 행의 패딩이다 — 축이 셋 다 다르고, 하나가 Figma 에서 움직여도 나머지는
+     따라가지 않는다. 더구나 위 두 블록은 각각 "Header 전용" · "OS 바 두 컴포넌트
+     밖에서는 쓰지 않는다" 고 이미 선언했다 — 끌어다 쓰면 그 선언과 어긋난다.
+     clock-inset-y 와 indicators-height (둘 다 13px) 를 합치지 않은 것과 같은 판정이다.
+
+     이름에 -inset-y 를 남기는 이유는 --spacing-header-item-inset-y 와 같다:
+     --spacing-* 는 p-* 뿐 아니라 h-* · w-* · gap-* 도 읽는다. h-textfield-bottomitems-
+     checkbox-inset-y · gap-textfield-bottomitems-checkbox-inset-y 가 읽는 순간
+     오용임이 드러난다 — 이 행의 높이는 파생값(40)이고 아이템 간 간격은 spacing/4 다.
+     이름이 컴포넌트 스코프(textfield-bottomitems) + 하위 축(checkbox-inset-y) 인 것은
+     --spacing-textfield-textset-icon-inset-top 과 같은 방식이다. */
+  --spacing-textfield-bottomitems-checkbox-inset-y: 0.625rem;  /* 10px — TextFieldSlot/Bottom/Items 체크박스 행 상하 패딩. 13:2226 py-[10px] (20 + 10 + 10 = 40). 디렉터리 전체가 rem 이라 rem 으로 맞춘다 */
+
+  /* --- TextFieldSlot/Text · Password 텍스트 커서 두께 -----------------
+     ⚠ Figma 변수 아님, 가이드 표에도 없음. 출처는 레이어 실측값이다
+     (파일 7DxkWa12fiJWOrvPIDWUcp, 컴포넌트 세트 13:2377 "TextFieldSlot/Text" ·
+      13:2347 "TextFieldSlot/Password").
+
+     적용 노드는 4개다 — 두 세트의 focused variant 안에 있는 `cursor`
+     rounded-rectangle 이고, 넷 다 width 2 · height 24 로 같다
+     (get_metadata 2026-08-24 확인):
+       · 13:2389  Text/state=focused, isTyping=false      (13:2384 안)
+       · 13:2400  Text/state=focused, isTyping=true       (13:2394 안)
+       · 13:2365  Password/state=focused, isTyping=false  (13:2360 안)
+       · 13:2374  Password/state=focused, isTyping=true   (13:2368 안)
+     실측 width 는 2.0000010490730347 로 나온다 — Figma 부동소수 오차이고 설계값은
+     2 다. 같은 노드의 height 24.00000008742279 이 기존 --spacing-24 (24px) 와
+     정확히 맞는 것이 그 근거다.
+
+     변수가 아니라는 근거 (2026-08-24 확인):
+       · get_variable_defs(13:2377) 와 get_variable_defs(13:2347) 는 같은 집합을
+         낸다 = {text/secondary, family-font, font-size/body-large, font/body/large,
+         icon/secondary, spacing/16, spacing/14, radius/4, bg/tertiary,
+         border/strong, radius/full, bg/brand, text/primary}
+         ⇒ 두 세트 트리 전체의 number 변수는 spacing/14 · spacing/16 ·
+           font-size/body-large · radius/4 · radius/full 뿐이고 2 는 없다.
+       · get_variable_defs(27671:1222) 가 내보내는 spacing 컬렉션 13단
+         (4 · 6 · 8 · 12 · 14 · 16 · 20 · 24 · 32 · 40 · 64 · 80 · 100) 에도 2 가 없다.
+
+     위 spacing 13단 스케일에 끼워 넣지 않는 이유는 --spacing-hairline · OS 바
+     실측값 · Tab 2px · textset-icon-inset-top 과 같다: 그 13단은 Figma 가이드 표를
+     그대로 옮긴 것이고 2 는 그 표에 없다.
+
+     간격이 아닌데 spacing 축에 두는 이유: 이 값은 사각형의 두께다. 그래도 spacing 에
+     두는 것은 --spacing-hairline (선 두께) · --spacing-tab-indicator-height (표시선
+     두께) 가 이미 세운 선례 그대로다. Tailwind v4 에 두께용 테마 네임스페이스가 없고,
+     이 값을 소비하는 w-* 유틸리티가 읽는 것은 --spacing-* 뿐이다. 이름 끝의 -width 가
+     그 자리를 말하고 있어 다른 자리에 쓰면 읽는 순간 드러난다.
+
+     ⚠ 값이 같은 기존 2px 토큰 3개와 합치지 않는다. --spacing-hairline 이 두 실측값을
+     합칠 때 세운 기준이 "값이 같아서가 아니라 축이 같아서" 였다.
+       · --spacing-tab-state-layer-inset — 인셋이고 이쪽은 두께다. 축이 다르다.
+       · --spacing-tab-indicator-height — 두께라는 점은 같지만 Tab/Item 의 선택
+         표시선이다. 위 Tab 블록은 자기 안의 두 2px 조차 컴포넌트 역할이 달라 합치지
+         않았다. 컴포넌트가 아예 다른 이쪽에 같은 판정을 그대로 적용한다.
+       · --spacing-textfield-textset-icon-inset-top — 같은 TextField 계열이라 가장
+         헷갈리는 후보지만 합치지 않는다. 저쪽은 컴포넌트 세트 35:14458 (보조 텍스트
+         줄) 에서 16px 아이콘을 첫 줄에 맞추는 상단 인셋이고, 이쪽은 컴포넌트 세트
+         13:2377 · 13:2347 (입력 행) 안 사각형의 두께다. 가리키는 것이 인셋 대 두께로
+         다르고, 저쪽은 보조 텍스트의 행 높이 (14px × 1.5 = 21) 에서 파생돼 그 폰트가
+         바뀌면 따라 움직이는 반면 이쪽은 커서 자체의 굵기라 따라가지 않는다. 이름을
+         빌려 쓰면 w-textfield-textset-icon-inset-top 이 되어 이름이 자리를 잘못 말한다.
+     --spacing-hairline 이 1px 두 실측값을 합친 것과 대비된다: 그 둘은 "이 시스템에서
+     가장 얇은 선" 이라는 하나의 시스템 개념이었고, 여기 2px 넷은 각자 다른 컴포넌트의
+     개별 치수다.
+
+     컴포넌트 스코프가 textfield-textset · textfield-bottomitems 보다 한 단계 얕은
+     textfield 인 이유: 이 커서는 한 세트 전용이 아니라 13:2377 · 13:2347 두 세트에
+     같은 값으로 함께 있다. textfield-text 로 좁히면 Password 쪽에서 쓰는 것이 이름과
+     어긋난다. */
+  --spacing-textfield-cursor-width: 0.125rem;  /* 2px — TextFieldSlot/Text · Password 텍스트 커서 두께. 13:2389 · 13:2400 · 13:2365 · 13:2374 의 width 2. 디렉터리 전체가 rem 이라 rem 으로 맞춘다 */
+
+  /* --- [Field Text Set] Label 라벨 ↔ 필수 표시 간격 -------------------
+     ⚠ Figma 변수 아님, 가이드 표에도 없음. 출처는 레이어 실측값이다
+     (파일 7DxkWa12fiJWOrvPIDWUcp, 주 컴포넌트 35:14369 "[Field Text Set] Label",
+      TextField/Text 13:2188 · TextField/Password 13:2167 양쪽에서 쓰인다).
+
+     주 컴포넌트 35:14369 는 다른 페이지에 있어 get_metadata 가 "invalid node
+     selection" 을 낸다. 대신 인스턴스 경로로 조회했다 — 6개 인스턴스 전부에서
+     `content` 프레임의 두 자식 좌표가 문자 단위로 같다 (2026-08-25 확인):
+       I13:2191;35:14371 · I13:2201;35:14371 · I13:2206;35:14371  (Text 3개)
+       I13:2170;35:14371 · I13:2180;35:14371 · I13:2185;35:14371  (Password 3개)
+     각각 label x=0 w=42 (오른쪽 끝 42) · required x=44 → 간격 44 − 42 = 2.
+     부모 content 폭 53 = 42 + 2 + 9 로 정확히 맞아떨어진다 — 부동소수 오차 없이
+     떨어지므로 반올림 부산물이 아니라 선언된 itemSpacing 2 다.
+
+     변수가 아니라는 근거 (2026-08-25 확인):
+       · get_variable_defs(13:2188) 와 get_variable_defs(13:2167) 의 number 변수는
+         spacing/4 · 8 · 12 · 14 · 16 · font-size/label-large · font-size/body-large ·
+         font-size/body-small · radius/4 뿐이고 2 는 없다.
+       · 같은 트리 안의 다른 gap 들은 전부 변수에 묶여 있다 (spacing/4 · 8 · 12 ·
+         14 · 16). 이 라벨 gap 만 묶이지 않았다 — 2 가 스케일 값이었다면 바로 옆
+         gap 다섯 개를 묶으면서 이것만 남길 이유가 없다. 묶이지 않았다는 사실
+         자체가 이 값이 스케일 단이 아니라 개별 실측 보정임을 가리킨다.
+         (--spacing-hairline · Tab 2px · textset-icon-inset-top · cursor-width 가
+          쓴 var() 판정 시험을 형제 노드 수준으로 적용한 것이다)
+
+     위 spacing 13단 스케일에 끼워 넣지 않는 이유 — 앞의 네 건보다 근거가 강하다:
+     get_variable_defs(27671:1222) 는 가이드 표 판독이 아니라 이 파일의 spacing
+     **변수 컬렉션 자체**를 내보내고, 그 결과가 정확히 13단이다
+     (4 · 6 · 8 · 12 · 14 · 16 · 20 · 24 · 32 · 40 · 64 · 80 · 100). 2 는 없다.
+     즉 "가이드 표에 2 가 안 적혀 있다" 가 아니라 "디자인 시스템의 변수 컬렉션에
+     2 라는 단이 존재하지 않는다" 다. 스케일은 옮겨 적다 빠뜨릴 수 있는 표가
+     아니라 권위 있는 집합이고, 디자인 팀은 2 를 단으로 만든 적이 없다.
+
+     ⚠ 이로써 저장소의 2px 토큰이 5개가 된다 — "누락된 단이 있다" 는 신호인지
+     따졌고, 아니라고 판정했다. 상세는 docs/design-tokens.md 의 같은 절에 있다.
+     요약: 5건은 축이 서로 다르다 (표시선 두께 · 상태 레이어 인셋 · 아이콘 상단
+     인셋 · 커서 두께 · 라벨 gap) 이고 컴포넌트 계열도 Tab · TextFieldTextSet ·
+     TextFieldSlot · Field Text Set Label 로 흩어져 있다. 누락된 단이라면 같은 축이
+     반복돼야 하는데, 무관한 축에 흩어진 2px 은 1px 그리드 UI 에서 "눈에 보이는
+     가장 작은 보정" 이 2 라는 것일 뿐 스케일 단이 아니다.
+     또 --spacing-*: initial 로 Tailwind 동적 spacing 을 꺼 둔 이유가 스케일 밖 값을
+     조용히 통과시키지 않으려는 것인데, --spacing-2 를 넣으면 p-2 · m-2 · gap-2 ·
+     w-2 · h-2 · inset-2 … 유틸리티 한 벌이 통째로 열린다. Tailwind 기본 p-2 는
+     8px 라 "p-4 는 4px" 함정이 그대로 하나 더 늘어난다. 게다가 기존 2px 토큰 4개를
+     함께 정리하지 않으면 "단 + 예외 5개" 가 되어 지금보다 나빠지고, 정리하려면
+     컴포넌트 파일을 건드려야 해 원칙 3 을 벗어난다.
+
+     ⚠ CLAUDE.md 목적 1 의 "예외 5건" 반증 조건은 여기에 걸리지 않는다. 그 조건이
+     세는 것은 token-exempt 주석, 즉 토큰 체계를 빠져나간 raw 값이다. 여기 5개는
+     빠져나간 값이 아니라 전부 토큰이다 — 위반 건수는 그대로 0 이다.
+
+     ⚠ 값이 같은 기존 2px 토큰 4개와 합치지 않는다. 기준은 "값이 같아서가 아니라
+     축이 같아서" 다. 이번 건은 넷 중 어느 것과도 축이 다르다:
+       · --spacing-tab-indicator-height — 선택 표시선의 두께. 이쪽은 두 요소 사이
+         간격이다. 두께 대 간격으로 축이 다르다.
+       · --spacing-tab-state-layer-inset — 상태 레이어가 부모 안쪽으로 들어간 인셋.
+         인셋은 한 요소와 그 경계 사이고, 이쪽은 나란한 두 요소 사이다.
+       · --spacing-textfield-textset-icon-inset-top — 같은 TextField 계열이지만
+         저쪽은 세트 35:14458 에서 16px 아이콘을 첫 줄 baseline 에 맞추는 세로
+         인셋이고, 이쪽은 세트 35:14369 에서 라벨과 * 사이의 가로 간격이다. 축이
+         세로 인셋 대 가로 gap 으로 다르고, 저쪽은 보조 텍스트 행 높이(14 × 1.5)
+         에서 파생돼 폰트가 바뀌면 따라 움직이지만 이쪽은 따라가지 않는다.
+       · --spacing-textfield-cursor-width — 사각형의 굵기. 이쪽은 간격이다.
+     이번 건이 다섯 중 유일하게 진짜 "간격" 이라는 점은 spacing 축 소속을 오히려
+     확실하게 해 준다 — 다만 그것은 spacing 네임스페이스에 둘 이유이지, 13단
+     스케일의 단이 될 이유는 아니다. 그 둘은 다른 질문이다.
+     --spacing-hairline 이 1px 두 실측값을 합친 것과 대비된다: 그 둘은 "이 시스템에서
+     가장 얇은 선" 이라는 하나의 시스템 개념이었고, 여기 2px 다섯은 각자 다른
+     컴포넌트의 개별 치수다.
+
+     컴포넌트 스코프가 textfield-textset 보다 한 단계 얕은 textfield 인 이유는
+     --spacing-textfield-cursor-width 와 같다: 이 라벨은 한 세트 전용이 아니라
+     13:2188 · 13:2167 두 세트에 같은 값으로 함께 있다. textfield-text 로 좁히면
+     Password 쪽에서 쓰는 것이 이름과 어긋난다.
+
+     이름 끝에 -gap 을 남기는 이유는 -inset-top · -width 와 같다: --spacing-* 는
+     gap-* 뿐 아니라 p-* · w-* · h-* 도 읽는다. w-textfield-label-gap 이 되면 읽는
+     순간 오용임이 드러난다. */
+  --spacing-textfield-label-gap: 0.125rem;  /* 2px — [Field Text Set] Label 라벨 ↔ 필수 표시 * 간격. 35:14369 인스턴스 6개의 label 오른쪽 끝 42 ↔ required x=44. 디렉터리 전체가 rem 이라 rem 으로 맞춘다 */
 }
 
 /* ============================================================

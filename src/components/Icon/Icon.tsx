@@ -1,9 +1,13 @@
 import type { ReactNode, SVGProps } from 'react';
 
 /**
- * Figma `Icon` 섹션(node 27683:6168)의 심볼 12개.
+ * 이 컴포넌트가 그리는 심볼 14개.
  * Figma 이름에서 `Icon/` 접두사와 `-line` 접미사를 뗀 값이다.
  * (`-fill` 은 line/fill 이 쌍으로 존재하므로 남긴다.)
+ *
+ * ⚠ **소스가 한 곳이 아니다.** 처음 12개는 Figma `Icon` 섹션(node 27683:6168)
+ * 직속 심볼이지만, 뒤의 2개는 그 섹션의 자식 14개에 **들어 있지 않다**.
+ * 각 글리프의 출처 노드는 `Icon.design.md` 의 "Figma 소스" 절에 적어 두었다.
  */
 export type IconName =
   | 'chevronLeft-small'
@@ -17,9 +21,18 @@ export type IconName =
   | 'visibilityOff'
   | 'success-circle-line'
   | 'success-circle-fill'
-  | 'circle-fill';
+  | 'circle-fill'
+  // ↓ `Icon` 섹션 밖에서 온 2개.
+  | 'info-circle-fill'
+  | 'close-circle-fill';
 
-/** colors.tokens.css 의 `--color-icon-*` semantic 토큰 집합과 1:1 대응한다. */
+/**
+ * colors.tokens.css 의 `--color-icon-*` semantic 토큰 집합과 1:1 대응한다.
+ *
+ * ⚠ `negative` 와 `status-negative` 는 **다른 토큰이고 값도 다르다.**
+ * `negative` 는 Figma 변수 `icon/negative` 이고, `status-negative` 는 상태 메시지
+ * 아이콘 전용의 한 단 밝은 색이다. 근거는 `colors.tokens.css` 의 `icon/status-*` 주석에 있다.
+ */
 export type IconColor =
   | 'primary'
   | 'secondary'
@@ -28,7 +41,10 @@ export type IconColor =
   | 'brand'
   | 'negative'
   | 'disabled-on-light'
-  | 'disabled-on-dark';
+  | 'disabled-on-dark'
+  | 'status-negative'
+  | 'status-positive'
+  | 'status-informative';
 
 const COLOR: Record<IconColor, string> = {
   primary: 'text-icon-primary',
@@ -39,13 +55,16 @@ const COLOR: Record<IconColor, string> = {
   negative: 'text-icon-negative',
   'disabled-on-light': 'text-icon-disabled-on-light',
   'disabled-on-dark': 'text-icon-disabled-on-dark',
+  'status-negative': 'text-icon-status-negative',
+  'status-positive': 'text-icon-status-positive',
+  'status-informative': 'text-icon-status-informative',
 };
 
 /**
  * name → SVG 기하.
  * 출처: Figma download_assets(defaultFormat: svg) 의 export SVG 에서
  * `<g id="Icon/...">` 그룹을 그대로 뽑은 것이다. 좌표는 24 뷰박스 기준.
- * Figma 원본은 12개 전부 stroke 없이 fill 만 쓰는 확장된 아웃라인이므로
+ * Figma 원본은 14개 전부 stroke 없이 fill 만 쓰는 확장된 아웃라인이므로
  * stroke-width 같은 시각 값이 코드에 들어오지 않는다.
  * 원본 fill 은 Figma 변수 `icon/primary` 였고 currentColor 로 바꿨다.
  * 색은 `text-icon-*` 유틸리티가 결정한다.
@@ -116,22 +135,48 @@ const PATHS: Record<IconName, ReactNode> = {
       <path fillRule="evenodd" clipRule="evenodd" d="M12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2ZM12 15C11.4477 15 11 15.4477 11 16C11 16.5523 11.4477 17 12 17C12.5523 17 13 16.5523 13 16C13 15.4477 12.5523 15 12 15ZM12 7C11.3126 7 10.7547 7.5549 10.75 8.24121L11.001 12.9609C11.0005 12.9739 11 12.9869 11 13C11 13.5523 11.4477 14 12 14C12.5523 14 13 13.5523 13 13L13.25 8.24121C13.2453 7.5549 12.6874 7 12 7Z" fill="currentColor"/>
     </>
   ),
+  // 컴포넌트 노드 35:12116. `Icon` 섹션(27683:6168) 자식이 아니다.
+  // 그 노드는 get_metadata·get_screenshot·get_design_context 가 전부 거부하고
+  // download_assets 만 응답한다. 응답은 vector 자체 경계(20 뷰박스)의 SVG 라
+  // 24 뷰박스로 옮기려면 좌표를 (2, 2) 만큼 밀어야 한다.
+  // 그 이동은 손으로 하지 않고 스크립트로 했고, 같은 스크립트를 아래
+  // close-circle-fill 의 20 뷰박스 vector 에 돌려 Figma 가 직접 내보낸
+  // 24 뷰박스 export 와 문자 단위로 같은지 확인해 검증했다. 자세한 근거는 design.md.
+  'info-circle-fill': (
+    <>
+      <path fillRule="evenodd" clipRule="evenodd" d="M12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2ZM12 10.75C11.4477 10.75 11 11.1977 11 11.75V15.75C11 16.3023 11.4477 16.75 12 16.75C12.5523 16.75 13 16.3023 13 15.75V11.75C13 11.1977 12.5523 10.75 12 10.75ZM12 7.25C11.4477 7.25 11 7.69772 11 8.25C11 8.80229 11.4477 9.25 12 9.25C12.5523 9.25 13 8.80229 13 8.25C13 7.69772 12.5523 7.25 12 7.25Z" fill="currentColor"/>
+    </>
+  ),
+  // 인스턴스 13:2401 (TextFieldSlot/Text) 의 24 뷰박스 export SVG 에서
+  // `<g id="close-circle-fill">` 를 그대로 뽑았다. 이동·보정 없음.
+  // 같은 글리프가 13:2375 (TextFieldSlot/Password) 에도 쓰인다.
+  'close-circle-fill': (
+    <>
+      <path fillRule="evenodd" clipRule="evenodd" d="M12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2ZM15.5352 8.46484C15.1446 8.07438 14.5116 8.07434 14.1211 8.46484L11.999 10.585L9.87891 8.46484C9.48838 8.07438 8.85535 8.07434 8.46484 8.46484C8.0744 8.85535 8.0744 9.4884 8.46484 9.87891L10.585 11.999L8.46387 14.1211C8.07369 14.5115 8.07388 15.1447 8.46387 15.5352C8.85437 15.9257 9.48838 15.9256 9.87891 15.5352L12 13.4141L14.1211 15.5352C14.5116 15.9257 15.1446 15.9256 15.5352 15.5352C15.9257 15.1446 15.9257 14.5116 15.5352 14.1211L13.4141 12L15.5352 9.87891C15.9257 9.48841 15.9256 8.85537 15.5352 8.46484Z" fill="currentColor"/>
+    </>
+  ),
 };
 
 export interface IconProps extends Omit<SVGProps<SVGSVGElement>, 'color'> {
-  /** 렌더링할 심볼. Figma `Icon` 섹션의 12개만 받는다. */
+  /** 렌더링할 심볼. `IconName` 의 14개만 받는다. */
   name: IconName;
   /** `--color-icon-*` semantic 토큰. 기본값 primary. */
   color?: IconColor;
 }
 
 /**
- * Figma `Icon` 섹션 심볼 12개를 렌더링한다.
+ * `IconName` 의 심볼 14개를 렌더링한다.
  * 크기는 Figma 원본과 같은 24 고정이며 `--spacing-24` 에서 내려온
  * `size-24` 유틸리티로 지정한다. `shrink-0` 은 flex 컨테이너 안에서
  * 그 고정 크기가 줄어들지 않게 하기 위한 것이다.
  *
- * 기본값은 장식용(`aria-hidden="true"`)이다. 이 섹션의 아이콘은 전부
+ * ⚠ **이 컴포넌트는 24 전용이다.** 크기 prop 이 없고, 14개 글리프의 좌표가
+ * 전부 24 뷰박스 기준이다. 더 작은 자리에 쓰려면 그 자리의 Figma 기하를 따로
+ * 확인해야 한다 — 예를 들어 `TextFieldTextSet` 의 상태 아이콘 자리는 24 를
+ * 줄인 것이 아니라 더 큰 여백을 가진 별도 기하라서 이 컴포넌트를 쓰지 않는다.
+ * 근거는 `TextFieldTextSet.design.md` 에 있다.
+ *
+ * 기본값은 장식용(`aria-hidden="true"`)이다. 여기 아이콘은 전부
  * 버튼·입력 필드·리스트 같은 텍스트 있는 컨트롤에 붙는 보조 표시이고,
  * 그 경우 아이콘을 스크린리더에 노출하면 라벨이 중복 읽힌다.
  * 아이콘이 유일한 의미 전달자인 자리에서는 호출부에서

@@ -14,6 +14,9 @@ const COLORS: IconColor[] = [
   'negative',
   'disabled-on-light',
   'disabled-on-dark',
+  'status-negative',
+  'status-positive',
+  'status-informative',
 ];
 
 /** 어두운 배경 위에서 봐야 의미가 있는 값. */
@@ -47,7 +50,10 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};
 
-/** Figma `Icon` 섹션(node 27683:6168)의 심볼 12개 전부. */
+/**
+ * `IconName` 의 심볼 14개 전부. 앞의 12개는 Figma `Icon` 섹션(node 27683:6168)
+ * 직속 심볼이고, `info-circle-fill` · `close-circle-fill` 은 그 섹션 밖에서 왔습니다.
+ */
 export const AllIcons: Story = {
   parameters: { layout: 'padded' },
   render: (args) => (

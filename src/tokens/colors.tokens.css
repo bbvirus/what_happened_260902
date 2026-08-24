@@ -7,6 +7,10 @@
    컴포넌트는 Semantic 유틸리티만 쓴다. Primitive 직접 참조 금지.
    raw 값 금지 규칙과 예외는 CLAUDE.md ## 토큰 규칙 참조.
 
+   ⚠ 예외 — 이 파일의 색 중 icon/status-* 3개만 Figma Variable 이 아니다.
+   TextFieldTextSet(35:14458) 의 raw fill 오버라이드에서 역추적했다. 근거는
+   해당 블록 주석 참조. 변수로 등록되면 /sync-tokens 로 다시 맞춘다.
+
    주의: get_variable_defs 는 alias 체인이 아니라 해석된 값을 준다.
    아래 Semantic → Primitive 참조는 값 일치로 역추적한 것이며
    Figma 의 실제 alias 구조와 다를 수 있다. 매핑 근거는
@@ -268,6 +272,47 @@
   --color-icon-negative: var(--negative-light-500);
   --color-icon-disabled-on-light: var(--dimmed-black-16);
   --color-icon-disabled-on-dark: var(--dimmed-white-64);
+
+  /* --- icon/status-* → text-icon-status-* -----------------------
+     ⚠ 출처 구분 — 위 icon/* 8개와 달리 아래 3개는 Figma Variable 이 아니다.
+     TextFieldTextSet 상태 아이콘의 raw fill 오버라이드에서 역추적한 값이다.
+     출처: Figma file 7DxkWa12fiJWOrvPIDWUcp / 컴포넌트 세트 35:14458
+     추출: 2026-08-24
+
+     변수가 아니라는 근거 (2026-08-24 확인):
+       · get_variable_defs(35:14600 error 아이콘)  = {}
+       · get_variable_defs(35:14596 error variant) = {text/negative, family-font,
+         font-size/body-small, font/body/small, spacing/4}
+       ⇒ 같은 variant 안에서 텍스트 색은 var(--text/negative) 로 나오는데
+         아이콘 색은 어떤 변수로도 나오지 않는다. 변수였다면 아이콘도 var() 로
+         나왔을 것이다 (--spacing-hairline 이 두께에 쓴 것과 같은 판정 시험).
+       값은 각 아이콘의 SVG export fill 에서 읽었다:
+         35:14600 Icon/circle-fill          → #E51A1A
+         35:14564 Icon/success-circle-fill  → #24A326
+         35:14521 info-circle-fill          → #477EEB
+
+     기존 semantic 으로 대체되지 않는 이유: 세 값 모두 같은 variant 의 텍스트 색보다
+     한두 단 밝다. 아이콘과 텍스트가 서로 다른 단을 쓰는 것이 세 status 에 일관되게
+     나타나므로 스타일 누락이 아니라 별도 축이다.
+       error       아이콘 negative/400 #e51a1a  ↔ 텍스트 text/negative        #da0707
+       success     아이콘 positive/500 #24a326  ↔ 텍스트 status/positive      #018303
+       informative 아이콘 informative/300 #477eeb ↔ 텍스트 status/informative #064ad0
+
+     ⚠ 위 --color-icon-negative (#da0707) 와 혼동하지 말 것. 그쪽은 Figma 변수
+     icon/negative 이고, 이쪽은 상태 메시지 아이콘 전용의 더 밝은 값이다. 값이 다르므로
+     합칠 수 없다.
+
+     ⚠ --color-text-positive 는 값이 #24a326 로 아래 icon-status-positive 와 같지만
+     합치지 않는다. --spacing-hairline 이 두 실측값을 합칠 때 세운 기준이 "값이 같아서가
+     아니라 축이 같아서" 였다. 하나는 본문 텍스트의 positive 색이고 다른 하나는 상태
+     아이콘 색이다 — 축이 다르고, 한쪽이 Figma 에서 움직여도 다른 쪽은 따라가지 않는다.
+     이 파일이 이미 icon/* 를 text/* 와 값이 같아도 별도 축으로 두고 있는 것과 같다
+     (icon-primary ↔ text-primary, icon-secondary ↔ text-secondary 등 5쌍).
+
+     status/warning 계열은 TextFieldTextSet 에 없으므로 추가하지 않는다. */
+  --color-icon-status-negative: var(--negative-light-400);
+  --color-icon-status-positive: var(--positive-light-500);
+  --color-icon-status-informative: var(--informative-light-300);
 
   /* --- status/* ------------------------------------------------ */
   --color-status-negative: var(--negative-light-500);
