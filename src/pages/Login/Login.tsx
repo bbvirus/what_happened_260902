@@ -8,6 +8,8 @@ import { TextButton } from '../../components/TextButton/TextButton';
 import { TextFieldPassword } from '../../components/TextFieldPassword/TextFieldPassword';
 import { TextFieldText } from '../../components/TextFieldText/TextFieldText';
 import { TextSetTitle } from '../../components/TextSetTitle/TextSetTitle';
+import { isEmail } from '../../lib/email';
+import { supabase } from '../../lib/supabase';
 
 /**
  * Figma `page/Login` (node 27818:7071).
@@ -48,15 +50,85 @@ import { TextSetTitle } from '../../components/TextSetTitle/TextSetTitle';
  * 아니다. `App.tsx` 가 이미 쓰는 `min-h-dvh` 로 옮겼다 — 뷰포트 상대 단위라
  * 치수 리터럴이 아니다.
  *
- * ## `<form>` 을 두지 않았다
- * 제출 대상이 정해져 있지 않다. 로그인 요청을 보낼 곳도, 성공·실패 화면도 Figma 에
- * 없어서 `onSubmit` 이 할 일을 지어내야 한다. 지어내지 않았다 (원칙 1).
- * 두 버튼은 `Button` 기본값인 `type="button"` 이다.
+ * ## 로그인 요청은 Supabase Auth 로 간다
+ * `src/lib/supabase.ts` 의 클라이언트 하나를 쓴다 (요청자 지시). 새로 만들지 않는다.
+ *
+ * **아이디 필드에 들어오는 값은 이메일이다.** `signInWithPassword` 는 email 또는
+ * phone 으로만 인증하고, 이 화면에는 phone 필드가 없다. 아이디를 이메일로 볼지
+ * 도메인을 붙여 합성할지는 요청자가 정했다 — **이메일 그대로 넘긴다.**
+ * 라벨과 placeholder 는 Figma 값이라 바꾸지 않았다 (원칙 3). 이메일이 아닌 값을
+ * 넣으면 Supabase 가 거절하고, 그 문구가 아래 필드 하단에 그대로 뜬다.
+ *
+ * ## 이메일 형식 검사만 화면에서 한다
+ * 아이디 필드 값이 이메일 형식이 아니면 요청을 보내지 않고 **아이디 필드만** error
+ * 상태로 만들어 "이메일을 입력해주세요" 를 그 필드 하단에 띄운다 (요청자 지시).
+ * 판정은 `src/lib/email.ts` 의 `isEmail` 하나이고, `SignIn` 과 같은 함수를 쓴다.
+ *
+ * 이 화면이 자체적으로 하는 검사는 이것뿐이다. 빈 값·비밀번호 규칙 등 나머지 판정은
+ * 여전히 Supabase 가 하고, 그 결과는 두 필드를 함께 error 로 만든다 (원칙 1).
+ *
+ * ## 실패 표시에 `isDisabled` 가 함께 붙는 이유
+ * `TextFieldText`·`TextFieldPassword` 의 타입이 `isError` 를 `isDisabled: true` 와만
+ * 짝지어 받는다. Figma 세트(13:2188)에 그 조합(13:2204)만 저작돼 있기 때문이다.
+ * 두 컴포넌트에서 `isDisabled` 는 **색만** 바꾸고 `<input disabled>` 를 걸지 않으며,
+ * `isError` 가 켜지면 그 색 변경마저 건너뛴다. 그래서 이 조합이 실제로 만드는 것은
+ * `border/negative` 테두리 + 에러 보조 문구뿐이고, 입력은 계속 된다.
+ * 컴포넌트의 타입을 이 화면 때문에 넓히지 않았다 (원칙 3).
+ *
+ * ## `<form>` 은 여전히 두지 않았다
+ * 두 버튼은 `Button` 기본값인 `type="button"` 이고, 요청은 클릭 핸들러가 보낸다.
+ * `<form>` 으로 감싸면 Enter 제출이 생기는데, 그것은 요청 범위 밖의 동작 추가다.
  */
 export function Login() {
   const navigate = useNavigate();
   const [id, setId] = useState('');
   const [password, setPassword] = useState('');
+  // 요청이 날아가 있는 동안 true. 하단 두 버튼을 함께 잠근다 (요청자 지시).
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  // 인증 실패. null 이 아니면 두 필드가 error 상태다 — 아이디·비밀번호 중 어느 쪽이
+  // 틀렸는지 Supabase 가 알려주지 않는다. 문구는 비밀번호 필드 하단에 한 번만 뜬다.
+  const [error, setError] = useState<string | null>(null);
+  // 아이디 필드 하나만의 문제(이메일 형식). 그 필드 하단에 뜬다.
+  const [idError, setIdError] = useState<string | null>(null);
+
+  // 위 "실패 표시에 `isDisabled` 가 함께 붙는 이유" 참조.
+  const ERROR_PROPS = { isDisabled: true, isError: true } as const;
+  const idErrorProps = error !== null || idError !== null ? ERROR_PROPS : {};
+  const passwordErrorProps = error !== null ? ERROR_PROPS : {};
+
+  async function handleSignIn() {
+    setError(null);
+    setIdError(null);
+
+    // 형식이 아니면 요청 자체를 보내지 않는다. Supabase 도 거절하지만 그 문구는
+    // 영문이고 비밀번호 필드 하단에 뜬다 — 요청받은 것은 아이디 필드의 우리 문구다.
+    if (!isEmail(id)) {
+      setIdError('이메일을 입력해주세요');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: id,
+      password,
+    });
+
+    setIsSubmitting(false);
+
+    if (signInError) {
+      // 자격 증명 실패만 우리 문구로 바꾼다. 나머지(이메일 형식·네트워크·설정 오류)는
+      // Supabase 문구를 그대로 보여준다 — 실패를 한 문장으로 덮지 않는다 (원칙 4).
+      setError(
+        signInError.code === 'invalid_credentials'
+          ? '아이디 또는 비밀번호를 확인해 주세요'
+          : signInError.message,
+      );
+      return;
+    }
+
+    navigate('/consent');
+  }
 
   return (
     <div className="bg-bg-secondary flex min-h-dvh w-mobile-frame-width flex-col">
@@ -90,6 +162,8 @@ export function Login() {
           <TextFieldText
             label="아이디"
             required={false}
+            {...idErrorProps}
+            supporting={idError ?? undefined}
             input={{
               id: 'login-id',
               name: 'username',
@@ -108,6 +182,8 @@ export function Login() {
               대신할 안내 문구는 Figma 에 없어서 지어내지 않았다 (원칙 1). */}
           <TextFieldPassword
             label="비밀번호"
+            {...passwordErrorProps}
+            supporting={error ?? undefined}
             input={{
               id: 'login-password',
               name: 'password',
@@ -135,7 +211,12 @@ export function Login() {
               "로그인 화면에서 회원가입을 누르면 회원가입 화면으로 넘어갈 수 있게".
               Figma 에는 두 프레임을 잇는 프로토타입 연결이 없어 이동 자체는 Figma
               근거가 아니라 이 결정이 근거다. */}
-          <Button variant="filled-secondary" className="flex-1" onClick={() => navigate('/signin')}>
+          <Button
+            variant="filled-secondary"
+            className="flex-1"
+            isDisabled={isSubmitting}
+            onClick={() => navigate('/signin')}
+          >
             회원가입
           </Button>
           {/* 27818:7152 — hierarchy=primary (Button 의 기본값이지만, 두 버튼이 나란히
@@ -145,12 +226,20 @@ export function Login() {
               근거다 — Figma 에는 두 프레임을 잇는 프로토타입 연결이 없고, 로그인
               성공·실패 화면도 없다.
 
-              입력값을 **검사하지 않는다.** 빈 값일 때의 처리(버튼 비활성 · 에러 문구)를
-              Figma 가 그려 두지 않았다. 검사 규칙을 지어내지 않았다 (원칙 1).
-              로그인 요청을 보내는 것도 아니다 — 보낼 곳이 정해져 있지 않다.
-              지금 이 버튼이 하는 일은 화면 이동뿐이고, 그것이 요청받은 범위다.
-              `SignIn` 의 회원가입 버튼이 같은 자리에서 내린 판단과 같다. */}
-          <Button variant="filled-primary" className="flex-1" onClick={() => navigate('/consent')}>
+              `signInWithPassword` 성공 시에만 이동한다. 목적지 `/consent` 는 이 버튼이
+              원래 갖고 있던 이동처를 그대로 둔 것이다 — 성공 후 어디로 갈지는 이번
+              요청에 없어서 바꾸지 않았다 (원칙 3).
+
+              **화면에서 하는 검사는 아이디의 이메일 형식 하나뿐이다** (요청자 지시).
+              빈 값·비밀번호 규칙 등은 규칙이 정해져 있지 않아 지어내지 않고 Supabase 의
+              판정을 그대로 받아 두 필드를 error 상태로 만든다 (원칙 1).
+              버튼이 잠기는 유일한 조건은 "요청 처리 중"이다. */}
+          <Button
+            variant="filled-primary"
+            className="flex-1"
+            isDisabled={isSubmitting}
+            onClick={handleSignIn}
+          >
             로그인
           </Button>
         </div>

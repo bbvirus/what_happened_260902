@@ -20,9 +20,6 @@ const AGREEMENT_ROWS = [
   { id: 'marketing', node: '27683:3199', title: '[선택] 마케팅 정보 수신 동의' },
 ] as const;
 
-/** `List/Checkbox` 27683:3193 의 상태 키. 위 4개와 같은 저장소에 들어간다. */
-const HEADER_ROW_ID = 'header';
-
 /**
  * Figma `page/Consent` (node 27683:3187).
  * 값 대조표와 판단 근거는 `Consent.design.md` 에 있다.
@@ -62,11 +59,18 @@ const HEADER_ROW_ID = 'header';
  * 두 hairline 이 세로로 붙어 있다. 디자인 파일의 실제 상태이고, 눈대중으로
  * 하나를 지우지 않았다 (원칙 1). 근거 좌표는 `Consent.design.md` 에 있다.
  *
- * ## 5개 행을 서로 독립으로 토글한다 — 전체동의 연동을 넣지 않았다
- * 첫 행의 라벨이 Figma 에서 기본 플레이스홀더 `타이틀 영역입니다.` 로 남아 있고
- * (디자이너가 오버라이드하지 않았다), 그 행과 아래 4행 사이의 연동은 Figma·요구사항
- * 어디에도 정의돼 있지 않다. "전체 동의" 로 읽고 select-all 을 만드는 것은 추정이라
- * 넣지 않았다. 5개가 각각 독립으로 켜지고 꺼진다.
+ * ## 첫 행은 전체동의다 — 요청자 결정이 근거다. Figma 에는 없다
+ * *"맨 상단 첫번째 체크박스 리스트인 `타이틀 영역입니다.` 부분 체크하면 아래
+ * 체크리스트 모두 체크되게"*.
+ *
+ * Figma 에는 이 행(27683:3193)과 아래 4행 사이의 연동이 정의돼 있지 않고, 라벨도
+ * 기본 플레이스홀더 `타이틀 영역입니다.` 그대로다. 연동의 근거는 요청자 결정 하나뿐이라
+ * 라벨 문구는 Figma 값 그대로 두고 동작만 붙였다.
+ *
+ * 양방향으로 묶었다 — 첫 행을 켜면 아래 4행이 모두 켜지고, 끄면 모두 꺼진다.
+ * 반대로 첫 행의 표시 상태는 저장하지 않고 **아래 4행이 전부 켜졌는지에서 파생한다**
+ * (`isAllChecked`). 한 방향만 묶으면 아래 행을 하나 끈 뒤에도 첫 행이 켜진 채로 남아
+ * 실제 상태와 어긋난다.
  *
  * ## 화면 이동 — 요청자 결정이 근거다. Figma 에는 없다
  * Figma 에 이 프레임을 다른 프레임에 잇는 프로토타입 연결이 없다. 아래 두 이동은
@@ -85,7 +89,8 @@ const HEADER_ROW_ID = 'header';
  * *"체크박스 리스트 아무것도 체크 안된 상태는 동의하고 계속하기 버튼이 비활성화.
  * 1개라도 체크박스 선택해야 활성화"*.
  *
- * 그래서 조건은 **5개 행 중 하나라도 켜졌는가** 하나뿐이다 (`hasAnyChecked`).
+ * 그래서 조건은 **아래 4행 중 하나라도 켜졌는가** 하나뿐이다 (`hasAnyChecked`).
+ * 첫 행은 이제 그 4행에서 파생하는 값이라 따로 세지 않는다 — 세면 같은 상태를 두 번 센다.
  * 필수/선택을 구분하지 않는다 — `[필수]`·`[선택]` 은 Figma 텍스트 노드의 **문구**이지
  * 컴포넌트 속성이 아니고, 첫 행의 라벨은 아예 플레이스홀더다. 문구를 파싱해 필수
  * 약관을 판정하는 것은 지어내는 것이라 하지 않았다 (원칙 1).
@@ -113,26 +118,33 @@ export function Consent() {
 
   const toggle = (id: string) => setChecked((prev) => ({ ...prev, [id]: !prev[id] }));
 
+  /** 전체동의 행의 표시 상태. 저장하지 않고 아래 4행에서 파생한다 (위 "첫 행은 전체동의다" 절). */
+  const isAllChecked = AGREEMENT_ROWS.every((row) => checked[row.id]);
+
+  /** 전체동의 토글. 켜져 있으면 4행을 모두 끄고, 아니면 모두 켠다. */
+  const toggleAll = () =>
+    setChecked(Object.fromEntries(AGREEMENT_ROWS.map((row) => [row.id, !isAllChecked])));
+
   /**
    * CTA 활성 조건. 껐다 켠 행은 `false` 로 남으므로 키 개수가 아니라 값을 본다.
    * 요청자 결정: "1개라도 체크박스 선택해야 활성화" (위 "CTA 비활성 조건" 절).
    */
-  const hasAnyChecked = Object.values(checked).some(Boolean);
+  const hasAnyChecked = AGREEMENT_ROWS.some((row) => checked[row.id]);
 
   /**
    * `ListCheckbox` 루트에 얹는 호스트 몫. `...props` 가 루트로 전개되므로
    * 별도 래퍼 없이 행 자체가 체크박스가 된다.
    */
-  const rowProps = (id: string) => ({
+  const rowProps = (isChecked: boolean, onToggle: () => void) => ({
     role: 'checkbox',
-    'aria-checked': Boolean(checked[id]),
+    'aria-checked': isChecked,
     tabIndex: 0,
-    onClick: () => toggle(id),
+    onClick: onToggle,
     onKeyDown: (event: KeyboardEvent<HTMLDivElement>) => {
       // role="checkbox" 의 표준 조작은 Space 다. 기본 동작(스크롤)을 막고 토글한다.
       if (event.key !== ' ') return;
       event.preventDefault();
-      toggle(id);
+      onToggle();
     },
   });
 
@@ -166,12 +178,13 @@ export function Consent() {
         {/* Agreements 27683:3192 */}
         <div role="group" aria-label="약관 동의" className="flex w-full flex-col pt-40">
           {/* 27683:3193 — List/Checkbox 인스턴스. slot-end 가 hidden 이라 hasIconEnd=false.
-              라벨은 Figma 텍스트 노드 그대로다 (위 "5개 행을" 절 참조). */}
+              라벨은 Figma 텍스트 노드 그대로이고, 전체동의 동작만 붙였다
+              (위 "첫 행은 전체동의다" 절 참조). */}
           <ListCheckbox
             title="타이틀 영역입니다."
             hasIconEnd={false}
-            isChecked={Boolean(checked[HEADER_ROW_ID])}
-            {...rowProps(HEADER_ROW_ID)}
+            isChecked={isAllChecked}
+            {...rowProps(isAllChecked, toggleAll)}
           />
 
           {/* 27683:3194 — 위 행이 이미 그린 구분선 바로 아래에 또 하나 있다.
@@ -188,7 +201,7 @@ export function Consent() {
                 size="compact"
                 hasDivider={false}
                 isChecked={Boolean(checked[row.id])}
-                {...rowProps(row.id)}
+                {...rowProps(Boolean(checked[row.id]), () => toggle(row.id))}
               />
             ))}
           </div>

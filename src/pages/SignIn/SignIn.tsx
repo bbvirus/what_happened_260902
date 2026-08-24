@@ -7,6 +7,8 @@ import { OSBarTopNavigation } from '../../components/OSBarTopNavigation/OSBarTop
 import { TextFieldPassword } from '../../components/TextFieldPassword/TextFieldPassword';
 import { TextFieldText } from '../../components/TextFieldText/TextFieldText';
 import { TextSetTitle } from '../../components/TextSetTitle/TextSetTitle';
+import { isEmail } from '../../lib/email';
+import { supabase } from '../../lib/supabase';
 
 /**
  * Figma `page/Login/SignIn` (node 27821:7158).
@@ -44,14 +46,103 @@ import { TextSetTitle } from '../../components/TextSetTitle/TextSetTitle';
  * (= 40 + 36), 그 안 첫 필드가 y=64 (= pt-64), 둘째가 y=190 (= 64 + 86 + 40).
  * 프레임 합도 맞는다 — 62 + 56 + 639 + 83 + 34 = 874.
  *
- * ## `<form>` 을 두지 않았고 CTA 에 핸들러가 없다
- * 가입 요청을 보낼 곳도, 성공·실패 화면도 Figma 에 없다. `Login` 과 같은 판정이다
- * (원칙 1). 이 화면으로 **들어오는** 길만 `Login` 의 회원가입 버튼에 연결했다.
+ * ## 가입 요청은 Supabase Auth 로 간다
+ * `src/lib/supabase.ts` 의 클라이언트 하나를 쓴다 (요청자 지시). 새로 만들지 않는다.
+ * 아이디 필드 값을 이메일로 그대로 넘기는 판단, 실패 표시에 `isDisabled` 가 함께
+ * 붙는 이유는 `Login.tsx` 의 같은 이름 절에 적혀 있다 — 두 화면이 같은 판단이다.
+ *
+ * 성공 경로는 세 단계다: `auth.signUp` → `profiles` 에 본인 행 1개 → `/login` 이동.
+ * `profiles.username` 에는 이메일의 `@` 앞부분을 넣는다 (요청자 결정).
+ *
+ * 아이디 필드 값이 이메일 형식이 아니면 요청을 보내지 않고 **아이디 필드만** error
+ * 상태로 만들어 "이메일을 입력해주세요" 를 그 필드 하단에 띄운다 (요청자 지시).
+ * 판정은 `src/lib/email.ts` 의 `isEmail` 하나이고, `Login` 과 같은 함수를 쓴다.
+ *
+ * ## 세션이 없으면 `profiles` 행을 만들지 않는다
+ * `profiles` 의 RLS 는 INSERT 에 `authenticated` 롤과 `auth.uid() = id` 를 요구한다
+ * (정책 `profiles_insert_own`). 프로젝트에 이메일 확인이 켜져 있으면 `signUp` 직후
+ * 세션이 없어서 이 조건을 만족할 수 없다. 그때는 행을 만들지 않고 "인증 후 로그인"
+ * 안내만 띄운다 — 확인 링크를 누르고 로그인한 뒤에 만들어져야 하는 행이다.
+ * 두 경우 모두에서 동작하도록 세션 유무로 분기한다 (요청자 결정).
+ *
+ * ## `<form>` 은 여전히 두지 않았다
+ * CTA 는 `Button` 기본값인 `type="button"` 이고, 요청은 클릭 핸들러가 보낸다.
+ * `Login` 과 같은 판단이다.
  */
 export function SignIn() {
   const navigate = useNavigate();
   const [id, setId] = useState('');
   const [password, setPassword] = useState('');
+  // 요청이 날아가 있는 동안 true. CTA 를 잠근다 (요청자 지시).
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  // 가입 실패. null 이 아니면 두 필드가 error 상태다. 문구는 비밀번호 필드 하단에 한 번.
+  const [error, setError] = useState<string | null>(null);
+  // 아이디 필드 하나만의 문제(이메일 형식). 그 필드 하단에 뜬다.
+  const [idError, setIdError] = useState<string | null>(null);
+  // 실패가 아니라 안내다 (이메일 확인 대기). error 와 동시에 켜지지 않는다.
+  const [notice, setNotice] = useState<string | null>(null);
+
+  // Login.tsx 의 "실패 표시에 `isDisabled` 가 함께 붙는 이유" 참조.
+  const ERROR_PROPS = { isDisabled: true, isError: true } as const;
+  const idErrorProps = error !== null || idError !== null ? ERROR_PROPS : {};
+  const passwordErrorProps = error !== null ? ERROR_PROPS : {};
+
+  async function handleSignUp() {
+    setError(null);
+    setIdError(null);
+    setNotice(null);
+
+    // 형식이 아니면 요청 자체를 보내지 않는다. Login 과 같은 판단이다.
+    if (!isEmail(id)) {
+      setIdError('이메일을 입력해주세요');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    const { data, error: signUpError } = await supabase.auth.signUp({
+      email: id,
+      password,
+    });
+
+    if (signUpError) {
+      setIsSubmitting(false);
+      // Supabase 문구를 그대로 보여준다 — 실패를 한 문장으로 덮지 않는다 (원칙 4).
+      setError(signUpError.message);
+      return;
+    }
+
+    // 이미 가입된 이메일인데 이메일 확인이 켜져 있으면 Supabase 는 error 를 주지 않고
+    // identities 가 빈 사용자를 돌려준다 (계정 존재 여부를 노출하지 않기 위한 동작).
+    // 이 경우를 성공으로 읽으면 아래 INSERT 가 조용히 실패한다.
+    if (data.user !== null && data.user.identities?.length === 0) {
+      setIsSubmitting(false);
+      setError('이미 가입된 아이디입니다');
+      return;
+    }
+
+    // 세션이 없다 = 이메일 확인이 켜져 있다. 위 "세션이 없으면 …" 절 참조.
+    if (data.session === null || data.user === null) {
+      setIsSubmitting(false);
+      setNotice('가입 확인 메일을 보냈습니다. 인증을 마친 뒤 로그인해 주세요');
+      return;
+    }
+
+    const { error: profileError } = await supabase.from('profiles').insert({
+      id: data.user.id,
+      username: id.split('@')[0],
+    });
+
+    setIsSubmitting(false);
+
+    if (profileError) {
+      // 계정은 만들어졌는데 프로필 행만 없는 상태다. 이동시키지 않고 그대로 알린다 (원칙 4).
+      setError(`계정은 만들어졌지만 프로필 저장에 실패했습니다: ${profileError.message}`);
+      return;
+    }
+
+    navigate('/login');
+  }
 
   return (
     <div className="bg-bg-secondary flex min-h-dvh w-mobile-frame-width flex-col">
@@ -81,6 +172,8 @@ export function SignIn() {
           <TextFieldText
             label="아이디"
             required={false}
+            {...idErrorProps}
+            supporting={idError ?? undefined}
             input={{
               id: 'signin-id',
               name: 'username',
@@ -98,6 +191,8 @@ export function SignIn() {
               새 계정의 비밀번호라 autoComplete 은 `new-password` 다. */}
           <TextFieldPassword
             label="비밀번호"
+            {...passwordErrorProps}
+            supporting={error ?? notice ?? undefined}
             input={{
               id: 'signin-password',
               name: 'new-password',
@@ -114,18 +209,18 @@ export function SignIn() {
           27821:7171 하나뿐이고 폭을 다 쓴다. Figma 가 flex-grow 1 · basis 0 을
           방출하고, `Button` 은 hug(`inline-flex`)라서 늘리는 것은 이 호출부다. */}
       <div className="flex w-full px-20 pt-8 pb-20">
-        {/* 누르면 로그인 화면으로 돌아간다. 요청자 결정이 근거다 —
-            "아이디, 비밀번호 인풋 입력하고 회원가입 버튼 눌러도 로그인 화면으로".
+        {/* 가입 요청을 보내고, `profiles` 행까지 만들어진 경우에만 로그인 화면으로
+            이동한다. 이동처 `/login` 은 요청자 지시다.
 
-            입력값을 **검사하지 않는다.** 빈 값일 때의 처리(버튼 비활성 · 에러 문구)를
-            Figma 가 그려 두지 않았고, `TextField*` 의 에러 variant 는 `isDisabled`
-            없이는 켜지지도 않는다. 검사 규칙을 지어내지 않았다 (원칙 1).
-            가입 요청을 보내는 것도 아니다 — 보낼 곳이 정해져 있지 않다.
-            지금 이 버튼이 하는 일은 화면 이동뿐이고, 그것이 요청받은 범위다. */}
+            **화면에서 하는 검사는 아이디의 이메일 형식 하나뿐이다** (요청자 지시).
+            빈 값·비밀번호 길이 규칙 등은 정해져 있지 않아 지어내지 않고 Supabase 의
+            판정을 그대로 받아 두 필드를 error 상태로 만든다 (원칙 1).
+            버튼이 잠기는 유일한 조건은 "요청 처리 중"이다. */}
         <Button
           variant="filled-secondary"
           className="flex-1"
-          onClick={() => navigate('/login')}
+          isDisabled={isSubmitting}
+          onClick={handleSignUp}
         >
           회원가입
         </Button>
