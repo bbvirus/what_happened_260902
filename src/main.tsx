@@ -2,6 +2,10 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import App from './App';
+import DetailsPage from '../front/pages/DetailsPage';
+import LoginPage from '../front/pages/LoginPage';
+import SignUpPage from '../front/pages/SignUpPage';
+import WhatHappenedPage from '../front/pages/WhatHappenedPage';
 import './index.css';
 
 /**
@@ -17,6 +21,10 @@ createRoot(document.getElementById('root')!).render(
       <Routes>
         <Route path="/" element={<Navigate to="/harness" replace />} />
         <Route path="/harness" element={<App />} />
+        <Route path="/main" element={<WhatHappenedPage />} />
+        <Route path="/details" element={<DetailsPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/sign-up" element={<SignUpPage />} />
       </Routes>
     </BrowserRouter>
   </StrictMode>,

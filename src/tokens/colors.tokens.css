@@ -226,6 +226,11 @@
   --color-bg-brand-subtle: var(--magenta-light-10);
   --color-bg-negative-subtle: var(--negative-light-10);
   --color-bg-positive-subtle: var(--positive-light-10);
+  /* ⚠ 출처 구분 — 아래 2개는 Figma 변수가 아니다. PRD 논의로 사용자가 직접
+     결정한 값 (2026-09-02, docs/prd-무슨일이야.md '판단 배지 색상' 참조).
+     이미 있는 primitive 를 semantic 으로만 노출함. */
+  --color-bg-informative-subtle: var(--informative-light-10);
+  --color-bg-negative-strong: var(--negative-light-900);
 
   /* --- border/* → border-border-* ----------------------------- */
   --color-border-primary: var(--neutral-gray-light-100);
